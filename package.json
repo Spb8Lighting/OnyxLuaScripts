@@ -11,6 +11,7 @@
     "gulp": "^3.9.1",
     "gulp-rename": "^1.4.0",
     "gulp-replace": "^1.0.0",
+    "gulp-zip": "^4.2.0",
     "merge-stream": "^1.0.1"
   },
   "scripts": {
