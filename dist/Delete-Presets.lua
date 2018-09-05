@@ -1,4 +1,4 @@
--- ShowCockpit LUA Script: DeleteRangeOfBeamFXPreset
+-- ShowCockpit LUA Script: DeleteRangeOfPreset
 --   created on ShowCockpit v2.4.2
 --   by Spb8 Lighting
 --   on 05-09-2018
@@ -6,7 +6,7 @@
 -------------
 -- Purpose --
 -------------
--- This script allows to delete a range of BeamFX presets (batch mode)
+-- This script allows to delete a range of presets (batch mode)
 
 ---------------
 -- Changelog --
@@ -17,15 +17,13 @@
 -- Configuration --
 -------------------
 
-PresetType = "BeamFX"
-
 Settings = {
     WaitTime = 0.05
 }
 
 ScriptInfos = {
-    version = "1.0",
-    name = "DeleteRangeOfBeamFXPreset"
+    version = "1.1",
+    name = "DeleteRangeOfPreset"
 }
 
 -- ShowCockpit LUA Script: LuaHeader for Spb8 Lighting LUA Script
@@ -151,6 +149,15 @@ function Input(Infos, Type)
 	-- Return the prompt
 	return Prompt
 end
+function InputDropDown(Infos)
+	-- Get the IntegerInput Prompt with default settings
+	Prompt = Input(Infos, "DropDown")
+	-- Prompt settings
+	Prompt.SetDropDownOptions(Infos.DropDown)
+	Prompt.SetDefaultValue(Infos.DropDownDefault)
+
+	return ShowInput(Prompt, Infos)
+end
 function InputYesNo(Infos)
 	-- Get the IntegerInput Prompt with default settings
 	Prompt = Input(Infos)
@@ -161,6 +168,7 @@ function InputNumber(Infos)
 	Prompt = Input(Infos, "IntegerInput")
 	-- Prompt settings
 	Prompt.SetMinValue(0)
+	
 	return ShowInput(Prompt, Infos)
 end
 function ShowInput(Prompt, Infos)
@@ -248,20 +256,36 @@ HeadPrint()
 Content = {
     StopMessage = "Stopped!" .. "\r\n\t" .. "The Preset type defined in the script configuration is not supported",
     Done = "Deletion Ended!",
-	Options = "Delete Options:",
-    DeleteFromPreset = {
+    Options = "Delete Options:",
+    Select = {
+        Question = "Which type of preset do you want to delete?",
+        Description = "Please select the preset type you want to delete from the list:"
+    },
+    From = {
         Question = "Delete from Preset n°",
-        Description = "Indicate the first Preset ID number "
+        Description = "Indicate the first Preset ID number:"
     },
-    DeleteToPreset = {
+    To = {
         Question = "To Preset n°",
-        Description = "Indicate the last Preset ID number"
+        Description = "Indicate the last Preset ID number:"
     },
-    DeleteValidation = {
+    Validation = {
         Question = "Are you sure to delete following Presets?",
         Description = "WARNING, it can't be UNDO! Use it with caution!"
     }
 }
+
+-- Request the Start Preset ID n°
+InputSettings = {
+    Question = Content.Select.Question,
+    Description = Content.Select.Description,
+    Buttons = Form.OkCancel,
+    DefaultButton = Word.Ok,
+    DropDown = {"Intensity", "PanTilt", "Color", "Gobo", "Beam", "BeamFX"},
+    DropDownDefault = "Intensity",
+    Cancel = true
+}
+PresetType = InputDropDown(InputSettings)
 
 -- If not PresetType defined, exit
 if Cancelled(PresetType) then
@@ -288,8 +312,8 @@ end
 
 -- Request the Start Preset ID n°
 InputSettings = {
-    Question = Content.DeleteFromPreset.Question,
-    Description = Content.DeleteFromPreset.Description,
+    Question = Content.From.Question,
+    Description = Content.From.Description,
     Buttons = Form.OkCancel,
     DefaultButton = Word.Ok,
     Cancel = true
@@ -299,20 +323,21 @@ if Cancelled(Settings.PTStart) then
     goto EXIT
 end
 -- Request the Last Preset ID n°
-InputSettings.Question = Content.DeleteToPreset.Question
-InputSettings.Description = Content.DeleteToPreset.Description
+InputSettings.Question = Content.To.Question
+InputSettings.Description = Content.To.Description
 Settings.PTEnd = InputNumber(InputSettings)
 if Cancelled(Settings.PTEnd) then
     goto EXIT
 end
 
 LogActivity(Content.Options)
+LogActivity("\r\n\t" .. "- Preset Type " .. PresetType)
 LogActivity("\r\n\t" .. "- From Preset n°" .. Settings.PTStart)
 LogActivity("\r\n\t" .. "- To Preset n°" .. Settings.PTEnd)
 
 InputValidationSettings = {
-    Question = Content.DeleteValidation.Question,
-    Description = Content.DeleteValidation.Description .. "\n\r\n\r" .. GetActivity(),
+    Question = Content.Validation.Question,
+    Description = Content.Validation.Description .. "\n\r\n\r" .. GetActivity(),
     Buttons = Form.YesNo,
     DefaultButton = Word.Yes
 }
