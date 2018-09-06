@@ -140,6 +140,14 @@ function InputNumber(Infos)
 	Prompt = Input(Infos, "IntegerInput")
 	-- Prompt settings
 	Prompt.SetMinValue(0)
+
+	return ShowInput(Prompt, Infos)
+end
+function InputFloatNumber(Infos)
+	-- Get the IntegerInput Prompt with default settings
+	Prompt = Input(Infos, "FloatInput")
+	-- Prompt settings
+	Prompt.SetMinValue(0)
 	
 	return ShowInput(Prompt, Infos)
 end
