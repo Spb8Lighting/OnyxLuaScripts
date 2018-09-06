@@ -4,7 +4,6 @@ const gulp = require('gulp')
 	, merge = require('merge-stream')
 	, zip = require('gulp-zip')
 	, fs = require('fs')
-	, PresetsType = ['Color', 'PanTilt', 'Intensity', 'Gobo', 'Beam', 'BeamFX']
 
 gulp.task('build', () => {
 	return gulp.src('./scripts/*.lua')
@@ -22,8 +21,9 @@ gulp.task('release:zip', () => {
 
 // On any modification of dist file
 gulp.task('watch', () => {
-	gulp.watch('./scripts', ['build', 'build'])
+	gulp.watch('./scripts/**/*', ['build'])
+	gulp.watch('./assets/**/*', ['build'])
 })
 // Default task when gulp command launched
-gulp.task('default', ['build'], () => {
+gulp.task('default', ['build', 'watch'], () => {
 })
