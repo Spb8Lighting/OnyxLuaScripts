@@ -31,6 +31,7 @@ ScriptInfos = {
 ---------------
 -- Changelog --
 ---------------
+-- 06-09-2018 - 1.1: Add Preset Name Framing, Add Generic GetPresetName, Add Generic DeletePreset
 -- 05-09-2018 - 1.0: Creation
 
 --------------------
@@ -45,7 +46,8 @@ PresetName = {
 	Intensity = "Intensity",
 	Gobo = "Gobo",
 	Beam = "Beam",
-	BeamFX = "BeamFX"
+	BeamFX = "BeamFX",
+	Framing = "Framing"
 }
 
 ScriptInfos = {
@@ -176,7 +178,7 @@ function InputFloatNumber(Infos)
 	Prompt = Input(Infos, "FloatInput")
 	-- Prompt settings
 	Prompt.SetMinValue(0)
-	
+
 	return ShowInput(Prompt, Infos)
 end
 function ShowInput(Prompt, Infos)
@@ -250,6 +252,64 @@ function RecordCuelist(number)
 	Onyx.Key_ButtonPress("Enter")
 	Sleep(Settings.WaitTime)
 	Onyx.Key_ButtonPress("Enter")
+end
+
+function CheckEmpty(Chain)
+	if Chain == nil or Chain == "" then
+		return "---"
+	else
+		return Chain
+	end
+end
+
+function GetPresetName(PresetType, PresetNumber)
+	if PresetType == PresetName.PanTilt then
+		return CheckEmpty(Onyx.GetPanTiltPresetName(PresetNumber))
+	elseif PresetType == PresetName.Color then
+		return CheckEmpty(Onyx.GetColorPresetName(PresetNumber))
+	elseif PresetType == PresetName.Intensity then
+		return CheckEmpty(Onyx.GetIntensityPresetName(PresetNumber))
+	elseif PresetType == PresetName.Gobo then
+		return CheckEmpty(Onyx.GetGoboPresetName(PresetNumber))
+	elseif PresetType == PresetName.Beam then
+		return CheckEmpty(Onyx.GetBeamPresetName(PresetNumber))
+	elseif PresetType == PresetName.BeamFX then
+		return CheckEmpty(Onyx.GetBeamFXPresetName(PresetNumber))
+	elseif PresetType == PresetName.Framing then
+		return CheckEmpty(Onyx.GetFramingPresetName(PresetNumber))
+	end
+end
+
+function DeletePreset(PresetType, CuelistNumber)
+	if PresetType == PresetName.PanTilt then
+		Onyx.DeletePanTiltPreset(CuelistNumber)
+	elseif PresetType == PresetName.Color then
+		Onyx.DeleteColorPreset(CuelistNumber)
+	elseif PresetType == PresetName.Intensity then
+		Onyx.DeleteIntensityPreset(CuelistNumber)
+	elseif PresetType == PresetName.Gobo then
+		Onyx.DeleteGoboPreset(CuelistNumber)
+	elseif PresetType == PresetName.Beam then
+		Onyx.DeleteBeamPreset(CuelistNumber)
+	elseif PresetType == PresetName.BeamFX then
+		Onyx.DeleteBeamFXPreset(CuelistNumber)
+	elseif PresetType == PresetName.Framing then
+		Onyx.DeleteFramingPreset(CuelistNumber)
+	end
+end
+
+function ListPreset(PresetType, PresetStart, PresetEnd)
+	Presets = {}
+	for i = PresetStart, PresetEnd, 1 do
+		table.insert(
+			Presets,
+			{
+				id = i,
+				name = GetPresetName(PresetType, i)
+			}
+		)
+	end
+	return Presets
 end
 
 HeadPrint()

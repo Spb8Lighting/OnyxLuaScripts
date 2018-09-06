@@ -11,6 +11,8 @@
 ---------------
 -- Changelog --
 ---------------
+-- 06-09-2018 - 1.2: Add Framing Preset, Add list of preset to be deleted in the final report before validation
+-- 06-09-2018 - 1.1: Add a drop down menu Preset Selection instead of having as lua file than preset type
 -- 05-09-2018 - 1.0: Creation
 
 -------------------
@@ -22,7 +24,7 @@ Settings = {
 }
 
 ScriptInfos = {
-    version = "1.1",
+    version = "1.2",
     name = "DeleteRangeOfPreset"
 }
 
@@ -36,6 +38,7 @@ Content = {
     StopMessage = "Stopped!" .. "\r\n\t" .. "The Preset type defined in the script configuration is not supported",
     Done = "Deletion Ended!",
     Options = "Delete Options:",
+    PresetList = "Preset list:",
     Select = {
         Question = "Which type of preset do you want to delete?",
         Description = "Please select the preset type you want to delete from the list:"
@@ -60,7 +63,7 @@ InputSettings = {
     Description = Content.Select.Description,
     Buttons = Form.OkCancel,
     DefaultButton = Word.Ok,
-    DropDown = {"Intensity", "PanTilt", "Color", "Gobo", "Beam", "BeamFX"},
+    DropDown = {"Intensity", "PanTilt", "Color", "Gobo", "Beam", "BeamFX", "Framing"},
     DropDownDefault = "Intensity",
     Cancel = true
 }
@@ -72,15 +75,14 @@ if Cancelled(PresetType) then
 else
     if PresetType == PresetName.PanTilt then
         Settings.Type = "Pan/Tilt"
-    elseif PresetType == PresetName.Color then
-        Settings.Type = PresetType
-    elseif PresetType == PresetName.Intensity then
-        Settings.Type = PresetType
-    elseif PresetType == PresetName.Gobo then
-        Settings.Type = PresetType
-    elseif PresetType == PresetName.Beam then
-        Settings.Type = PresetType
-    elseif PresetType == PresetName.BeamFX then
+    elseif
+        PresetType == PresetName.Color or
+        PresetType == PresetName.Intensity or
+        PresetType == PresetName.Gobo or
+        PresetType == PresetName.Beam or
+        PresetType == PresetName.BeamFX or
+        PresetType == PresetName.Framing
+    then
         Settings.Type = PresetType
     else
         LogInformation(Content.StopMessage)
@@ -110,9 +112,16 @@ if Cancelled(Settings.PTEnd) then
 end
 
 LogActivity(Content.Options)
-LogActivity("\r\n\t" .. "- Preset Type " .. PresetType)
-LogActivity("\r\n\t" .. "- From Preset n°" .. Settings.PTStart)
-LogActivity("\r\n\t" .. "- To Preset n°" .. Settings.PTEnd)
+LogActivity("\r\n\t" .. "- Delete " .. PresetType .. " Presets, from n°" .. Settings.PTStart .." to n°" .. Settings.PTEnd )
+
+-- Get all preset name
+LogActivity("\r\n" .. Content.PresetList)
+
+Presets = ListPreset(PresetType, Settings.PTStart, Settings.PTEnd)
+
+for i, Preset in pairs(Presets) do
+    LogActivity("\r\n\t" .. '- n°' .. Preset.id .. ' ' .. Preset.name)
+end
 
 InputValidationSettings = {
     Question = Content.Validation.Question,
@@ -123,20 +132,8 @@ InputValidationSettings = {
 Settings.Validation = InputYesNo(InputValidationSettings)
 
 if Settings.Validation then
-    for CLNum = Settings.PTStart, Settings.PTEnd do
-        if PresetType == PresetName.PanTilt then
-            Onyx.DeletePanTiltPreset(CLNum)
-        elseif PresetType == PresetName.Color then
-            Onyx.DeleteColorPreset(CLNum)
-        elseif PresetType == PresetName.Intensity then
-            Onyx.DeleteIntensityPreset(CLNum)
-        elseif PresetType == PresetName.Gobo then
-            Onyx.DeleteGoboPreset(CLNum)
-        elseif PresetType == PresetName.Beam then
-            Onyx.DeleteBeamPreset(CLNum)
-        elseif PresetType == PresetName.BeamFX then
-            Onyx.DeleteBeamFXPreset(CLNum)
-        end
+    for CuelistNumber = Settings.PTStart, Settings.PTEnd do
+        DeletePreset(PresetType, CuelistNumber)
         Sleep(Settings.WaitTime)
     end
     FootPrint(Content.Done)
