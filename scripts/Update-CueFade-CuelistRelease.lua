@@ -11,6 +11,7 @@
 ---------------
 -- Changelog --
 ---------------
+-- 07-09-2018 - 1.1: Fix issue with time value of 0 which was cancelling the script
 -- 05-09-2018 - 1.0: Creation
 
 -------------------
@@ -22,7 +23,7 @@ Settings = {
 }
 
 ScriptInfos = {
-	version = "1.0",
+	version = "1.1",
 	name = "UpdateCueFadeCuelistRelease"
 }
 
@@ -35,6 +36,7 @@ ScriptInfos = {
 Content = {
 	StopMessage = "Stopped!" .. "\r\n\t" .. "The Preset type defined in the script configuration is not supported",
 	Done = "Update Finished!",
+	CuelistList = "Cuelists List:",
 	Cuelist = {
 		Option = "Cuelist Options:",
 		From = {
@@ -98,9 +100,7 @@ if Cancelled(Settings.TimeRelease) then
 	goto EXIT
 end
 LogActivity(Content.Cuelist.Option)
-LogActivity("\r\n\t" .. "- From Cuelist n°" .. Settings.CLStart)
-LogActivity("\r\n\t" .. "- To Cuelist n°" .. Settings.CLEnd)
-LogActivity("\r\n\t" .. "- Release Time " .. Settings.TimeRelease .. "s")
+LogActivity("\r\n\t" .. "- Update Release Time " .. Settings.TimeRelease .. "s for Cuelists from n°" .. Settings.CLStart .." to n°" .. Settings.CLEnd )
 
 -- Request the start Cue ID n°
 InputSettings.Question = Content.Cue.From.Question
@@ -127,9 +127,16 @@ if Cancelled(Settings.TimeFade) then
 end
 
 LogActivity("\r\n\r\n" .. Content.Cue.Option)
-LogActivity("\r\n\t" .. "- From Cue n°" .. Settings.CueStart)
-LogActivity("\r\n\t" .. "- To Cue n°" .. Settings.CueEnd)
-LogActivity("\r\n\t" .. "- Fade Time " .. Settings.TimeFade .. "s")
+LogActivity("\r\n\t" .. "- Set Fade Time " .. Settings.TimeFade .. "s for Cues from n°" .. Settings.CueStart .. " to n°" .. Settings.CueEnd)
+
+-- Get all cuelist name
+LogActivity("\r\n" .. Content.CuelistList)
+
+Cuelists = ListCuelist(Settings.CLStart, Settings.CLEnd)
+
+for i, Cuelist in pairs(Cuelists) do
+    LogActivity("\r\n\t" .. '- n°' .. Cuelist.id .. ' ' .. Cuelist.name)
+end
 
 InputValidationSettings = {
 	Question = Content.Validation.Question,

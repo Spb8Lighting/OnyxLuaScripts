@@ -11,6 +11,7 @@
 ---------------
 -- Changelog --
 ---------------
+-- 07-09-2018 - 1.1: Fix an issue with the maximum ID Cuelist which was lock to 100. Add the list of cuelist to be deleted as information on validation
 -- 05-09-2018 - 1.0: Creation
 
 -------------------
@@ -22,7 +23,7 @@ Settings = {
 }
 
 ScriptInfos = {
-	version = "1.0",
+	version = "1.1",
 	name = "DeleteRangeOfCuelist"
 }
 
@@ -36,6 +37,7 @@ Content = {
 	StopMessage = "Stopped!" .. "\r\n\t" .. "The Preset type defined in the script configuration is not supported",
 	Done = "Deletion Ended!",
 	Options = "Delete Options:",
+	CuelistList = "Cuelists List:",
 	From = {
 		Question = "Delete from Cuelist n°",
 		Description = "Indicate the first Cuelist ID number (from cuelist repository)"
@@ -64,14 +66,23 @@ end
 -- Request the Last Preset ID n°
 InputSettings.Question = Content.To.Question
 InputSettings.Description = Content.To.Description
+InputSettings.CurrentValue = Settings.CLStart + 1
 Settings.CLEnd = InputNumber(InputSettings)
 if Cancelled(Settings.CLEnd) then
 	goto EXIT
 end
 
 LogActivity(Content.Options)
-LogActivity("\r\n\t" .. "- From Cuelist n°" .. Settings.CLStart)
-LogActivity("\r\n\t" .. "- To Cuelist n°" .. Settings.CLEnd)
+LogActivity("\r\n\t" .. "- Delete Cuelists, from n°" .. Settings.CLStart .." to n°" .. Settings.CLEnd )
+
+-- Get all cuelist name
+LogActivity("\r\n" .. Content.CuelistList)
+
+Cuelists = ListCuelist(Settings.CLStart, Settings.CLEnd)
+
+for i, Cuelist in pairs(Cuelists) do
+    LogActivity("\r\n\t" .. '- n°' .. Cuelist.id .. ' ' .. Cuelist.name)
+end
 
 InputValidationSettings = {
 	Question = Content.Validation.Question,

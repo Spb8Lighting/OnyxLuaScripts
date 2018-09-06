@@ -11,6 +11,7 @@
 ---------------
 -- Changelog --
 ---------------
+-- 07-09-2018 - 1.3: The "To ID Preset" is now automatically populate with the "From ID Preset" +1
 -- 06-09-2018 - 1.2: Add Framing Preset, Add list of preset to be deleted in the final report before validation
 -- 06-09-2018 - 1.1: Add a drop down menu Preset Selection instead of having as lua file than preset type
 -- 05-09-2018 - 1.0: Creation
@@ -24,7 +25,7 @@ Settings = {
 }
 
 ScriptInfos = {
-    version = "1.2",
+    version = "1.3",
     name = "DeleteRangeOfPreset"
 }
 
@@ -106,6 +107,7 @@ end
 -- Request the Last Preset ID n°
 InputSettings.Question = Content.To.Question
 InputSettings.Description = Content.To.Description
+InputSettings.CurrentValue = Settings.PTStart + 1
 Settings.PTEnd = InputNumber(InputSettings)
 if Cancelled(Settings.PTEnd) then
     goto EXIT

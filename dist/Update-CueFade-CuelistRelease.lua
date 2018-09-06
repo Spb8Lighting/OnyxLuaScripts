@@ -11,6 +11,7 @@
 ---------------
 -- Changelog --
 ---------------
+-- 07-09-2018 - 1.1: Fix issue with time value of 0 which was cancelling the script
 -- 05-09-2018 - 1.0: Creation
 
 -------------------
@@ -22,7 +23,7 @@ Settings = {
 }
 
 ScriptInfos = {
-	version = "1.0",
+	version = "1.1",
 	name = "UpdateCueFadeCuelistRelease"
 }
 
@@ -31,6 +32,7 @@ ScriptInfos = {
 ---------------
 -- Changelog --
 ---------------
+-- 07-09-2018 - 1.2: Fix input number max issue, reword some function parameter name, add ListCuelit(), add the possibility to define default value for InputNumber and InputFloatNumber
 -- 06-09-2018 - 1.1: Add Preset Name Framing, Add Generic GetPresetName, Add Generic DeletePreset
 -- 05-09-2018 - 1.0: Creation
 
@@ -58,8 +60,7 @@ ScriptInfos = {
 	website = "https://github.com/Spb8Lighting/OnyxLuaScripts"
 }
 Infos = {
-	Sentence = "Scripted by" ..
-		"\r\n\t" .. ScriptInfos.author .. "\r\n\t" .. ScriptInfos.contact .. "\r\n\t" .. ScriptInfos.website,
+	Sentence = "Scripted by " .. ScriptInfos.author .. "\r\n\r\n" .. ScriptInfos.contact .. "\r\n\r\n" .. ScriptInfos.website,
 	Script = ScriptInfos.name .. " v" .. ScriptInfos.version
 }
 
@@ -90,6 +91,9 @@ Word = {
 	No = "No"
 }
 Form = {
+	Ok = {
+		Word.Ok
+	},
 	OkCancel = {
 		Word.Ok,
 		Word.Cancel
@@ -114,11 +118,18 @@ end
 
 function FootPrint(Sentence)
 	LogInformation(Sentence .. "\r\n\t" .. Infos.Sentence)
+	Infos = {
+		Question = Infos.Script,
+		Description = Sentence .. "\r\n\r\n" .. Infos.Sentence,
+		Buttons = Form.Ok,
+		DefaultButton = Word.Ok
+	}
+	InputYesNo(Infos)
 end
 
 function Cancelled(variable)
 	if variable == nil or variable == "" then
-		LogInformation("Cancelled!" .. "\r\n\t" .. Infos.Script .. "\r\n\t" .. Infos.Sentence)
+		FootPrint("Script has been cancelled! Nothing performed.")
 		return true
 	else
 		return false
@@ -131,7 +142,7 @@ function CheckInput(Infos, Answer)
 	if Infos.Cancel == true then
 		if Answer["button"] == Word.Yes then
 			Answer["input"] = true
-		elseif Answer["input"] == 0 or Answer["button"] == Word.Cancel or Answer["button"] == Word.No then
+		elseif Answer["button"] == Word.Cancel or Answer["button"] == Word.No then
 			Answer["input"] = nil
 		end
 	end
@@ -170,6 +181,10 @@ function InputNumber(Infos)
 	Prompt = Input(Infos, "IntegerInput")
 	-- Prompt settings
 	Prompt.SetMinValue(1)
+	Prompt.SetMaxValue(10000)
+	if Infos.CurrentValue then
+		Prompt.SetDefaultValue(Infos.CurrentValue)
+	end
 
 	return ShowInput(Prompt, Infos)
 end
@@ -178,6 +193,9 @@ function InputFloatNumber(Infos)
 	Prompt = Input(Infos, "FloatInput")
 	-- Prompt settings
 	Prompt.SetMinValue(0)
+	if Infos.CurrentValue then
+		Prompt.SetDefaultValue(Infos.CurrentValue)
+	end
 
 	return ShowInput(Prompt, Infos)
 end
@@ -196,7 +214,6 @@ Messages = {}
 
 function LogActivity(text)
 	table.insert(Messages, text)
-	print(text)
 end
 
 function GetActivity()
@@ -302,9 +319,9 @@ function DeletePreset(PresetType, PresetID)
 	return true
 end
 
-function ListPreset(PresetType, PresetStart, PresetEnd)
+function ListPreset(PresetType, PresetIDStart, PresetIDEnd)
 	Presets = {}
-	for i = PresetStart, PresetEnd, 1 do
+	for i = PresetIDStart, PresetIDEnd, 1 do
 		table.insert(
 			Presets,
 			{
@@ -314,6 +331,19 @@ function ListPreset(PresetType, PresetStart, PresetEnd)
 		)
 	end
 	return Presets
+end
+function ListCuelist(CuelistIDStart, CuelistIDEnd)
+	Cuelists = {}
+	for i = CuelistIDStart, CuelistIDEnd, 1 do
+		table.insert(
+			Cuelists,
+			{
+				id = i,
+				name = CheckEmpty(Onyx.GetCuelistName(i))
+			}
+		)
+	end
+	return Cuelists
 end
 
 HeadPrint()
@@ -328,6 +358,7 @@ HeadPrint()
 Content = {
 	StopMessage = "Stopped!" .. "\r\n\t" .. "The Preset type defined in the script configuration is not supported",
 	Done = "Update Finished!",
+	CuelistList = "Cuelists List:",
 	Cuelist = {
 		Option = "Cuelist Options:",
 		From = {
@@ -391,9 +422,7 @@ if Cancelled(Settings.TimeRelease) then
 	goto EXIT
 end
 LogActivity(Content.Cuelist.Option)
-LogActivity("\r\n\t" .. "- From Cuelist n°" .. Settings.CLStart)
-LogActivity("\r\n\t" .. "- To Cuelist n°" .. Settings.CLEnd)
-LogActivity("\r\n\t" .. "- Release Time " .. Settings.TimeRelease .. "s")
+LogActivity("\r\n\t" .. "- Update Release Time " .. Settings.TimeRelease .. "s for Cuelists from n°" .. Settings.CLStart .." to n°" .. Settings.CLEnd )
 
 -- Request the start Cue ID n°
 InputSettings.Question = Content.Cue.From.Question
@@ -420,9 +449,16 @@ if Cancelled(Settings.TimeFade) then
 end
 
 LogActivity("\r\n\r\n" .. Content.Cue.Option)
-LogActivity("\r\n\t" .. "- From Cue n°" .. Settings.CueStart)
-LogActivity("\r\n\t" .. "- To Cue n°" .. Settings.CueEnd)
-LogActivity("\r\n\t" .. "- Fade Time " .. Settings.TimeFade .. "s")
+LogActivity("\r\n\t" .. "- Set Fade Time " .. Settings.TimeFade .. "s for Cues from n°" .. Settings.CueStart .. " to n°" .. Settings.CueEnd)
+
+-- Get all cuelist name
+LogActivity("\r\n" .. Content.CuelistList)
+
+Cuelists = ListCuelist(Settings.CLStart, Settings.CLEnd)
+
+for i, Cuelist in pairs(Cuelists) do
+    LogActivity("\r\n\t" .. '- n°' .. Cuelist.id .. ' ' .. Cuelist.name)
+end
 
 InputValidationSettings = {
 	Question = Content.Validation.Question,

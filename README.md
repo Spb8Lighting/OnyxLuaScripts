@@ -21,7 +21,7 @@ Inside the [header.lua](https://github.com/Spb8Lighting/OnyxLuaScripts/blob/mast
 <details>
     <summary>FootPrint(sentence)</summary>
     <p>Arguments: string sentence</p>
-    <p>This function will log the in ShowCockpit sentence argument and display the author informations</p>
+    <p>This function will log the in ShowCockpit sentence argument and display the author informations and display a pop-up to user (for script ends)</p>
 </details>
 <details>
     <summary>LogActivity(text)</summary>
@@ -78,16 +78,21 @@ Inside the [header.lua](https://github.com/Spb8Lighting/OnyxLuaScripts/blob/mast
 <details>
     <summary>CheckInput(Infos, Answer)</summary>
     <p>Arguments: JSON Infos {Cancel: boolean}, array Answer</p>
-    <p>This function will return, following the Infos.Cancel value, the user answer. If Infos.Cancel is true, and the user answer is 0 (for non float value) or empty or button cancel, the return will be a NIL value. Else, the answer will be the button content or the input value</p>
+    <p>This function will return, following the Infos.Cancel value, the user answer. If Infos.Cancel is true, and the user answer is empty or button cancel, the return will be a NIL value. Else, the answer will be the button content or the input value</p>
 </details>
 
 ### Onyx Function
 
 <details>
-    <summary>ListPreset(PresetType, PresetStart, PresetEnd)</summary>
-    <p>Arguments: string PresetType [Intensity|PanTilt|Color|Gobo|Beam|BeamFX|Framing], int PresetStart, int PresetEnd</p>
+    <summary>ListPreset(PresetType, PresetIDStart, PresetIDEnd)</summary>
+    <p>Arguments: string PresetType [Intensity|PanTilt|Color|Gobo|Beam|BeamFX|Framing], int PresetIDStart, int PresetIDEnd</p>
     <p>Dependency: GetPresetName()</p>
-    <p>This function will return an array of JSON object {id,name} with all Presets name of PresetType from ID PresetStart to ID PresetEnd</p>
+    <p>This function will return an array of JSON object {id,name} with all Presets name of PresetType from ID PresetIDStart to ID PresetIDEnd</p>
+</details>
+<details>
+    <summary>ListCuelist(CuelistIDStart, CuelistIDEnd)</summary>
+    <p>Arguments: int CuelistIDStart, int CuelistIDEnd</p>
+    <p>This function will return an array of JSON object {id,name} with all Cuelist name from ID CuelistIDStart to ID CuelistIDEnd</p>
 </details>
 <details>
     <summary>DeletePreset(PresetType, PresetID)</summary>
