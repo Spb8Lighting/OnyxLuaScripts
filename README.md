@@ -35,22 +35,8 @@ Inside the [header.lua](https://github.com/Spb8Lighting/OnyxLuaScripts/blob/mast
 
 ### Interface function
 
-<details>
-    <summary>Input(Infos, Type=false)</summary>
-    <p>Arguments: JSON Infos {Question: string, Description: string, Buttons: JSON {string Button1, string Button2, string Button3}, DefaultButton : string}, string Type [IntegerInput|FloatInput|TextInput|DropDown]</p>
-    <p>This function will return the ShowCockpit CreatePrompt() object</p>
-</details>
-<details>
-    <summary>ShowInput(Prompt, Infos)</summary>
-    <p>Arguments: object CreatePrompt, JSON Infos {Cancel: boolean}</p>
-    <p>Dependency: CheckInput()</p>
-    <p>This function will display the CreatePrompt to the user and will return the user answer (CheckInput() function output)</p>
-</details>
-<details>
-    <summary>CheckInput(Infos, Answer)</summary>
-    <p>Arguments: JSON Infos {Cancel: boolean}, array Answer</p>
-    <p>This function will return, following the Infos.Cancel value, the user answer. If Infos.Cancel is true, and the user answer is 0 (for non float value) or empty or button cancel, the return will be a NIL value. Else, the answer will be the button content or the input value</p>
-</details>
+#### Main function
+
 <details>
     <summary>InputDropDown(Infos)</summary>
     <p>Arguments: JSON Infos {Question: string, Description: string, Buttons: JSON {string Button1, string Button2, string Button3}, DefaultButton : string, DropDown : JSON {string Value 1, string Value 2, ...}, DropDownDefault: string}</p>
@@ -74,6 +60,25 @@ Inside the [header.lua](https://github.com/Spb8Lighting/OnyxLuaScripts/blob/mast
     <p>Arguments: JSON Infos {Question: string, Description: string, Buttons: JSON {string Button1, string Button2, string Button3}, DefaultButton : string, DropDown : JSON {string Value 1, string Value 2, ...}, DropDownDefault: string}</p>
     <p>Dependency: Input(), ShowInput()</p>
     <p>This function will display the CreatePrompt of type "FloatInput" to the user and will return the user value</p>
+</details>
+
+#### Sub function
+
+<details>
+    <summary>Input(Infos, Type=false)</summary>
+    <p>Arguments: JSON Infos {Question: string, Description: string, Buttons: JSON {string Button1, string Button2, string Button3}, DefaultButton : string}, string Type [IntegerInput|FloatInput|TextInput|DropDown]</p>
+    <p>This function will return the ShowCockpit CreatePrompt() object</p>
+</details>
+<details>
+    <summary>ShowInput(Prompt, Infos)</summary>
+    <p>Arguments: object CreatePrompt, JSON Infos {Cancel: boolean}</p>
+    <p>Dependency: CheckInput()</p>
+    <p>This function will display the CreatePrompt to the user and will return the user answer (CheckInput() function output)</p>
+</details>
+<details>
+    <summary>CheckInput(Infos, Answer)</summary>
+    <p>Arguments: JSON Infos {Cancel: boolean}, array Answer</p>
+    <p>This function will return, following the Infos.Cancel value, the user answer. If Infos.Cancel is true, and the user answer is 0 (for non float value) or empty or button cancel, the return will be a NIL value. Else, the answer will be the button content or the input value</p>
 </details>
 
 ### Onyx Function
