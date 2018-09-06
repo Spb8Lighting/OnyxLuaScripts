@@ -141,7 +141,7 @@ function InputNumber(Infos)
 	-- Get the IntegerInput Prompt with default settings
 	Prompt = Input(Infos, "IntegerInput")
 	-- Prompt settings
-	Prompt.SetMinValue(0)
+	Prompt.SetMinValue(1)
 
 	return ShowInput(Prompt, Infos)
 end
@@ -187,26 +187,26 @@ function trim(s)
 	return (s:gsub("^%s*(.-)%s*$", "%1"))
 end
 
-function CopyCue(CLOrigin, CUNumber, CLTarget)
+function CopyCue(CuelistIDSource, CueID, CuelistIDTarget)
 	Sleep(Settings.WaitTime)
-	Onyx.SelectCuelist(CLOrigin)
+	Onyx.SelectCuelist(CuelistIDSource)
 	Sleep(Settings.WaitTime)
 	Onyx.Key_ButtonPress("Copy")
 	Sleep(Settings.WaitTime)
 	Onyx.Key_ButtonPress("Cue")
 	Sleep(Settings.WaitTime)
-	KeyNumber(CUNumber)
+	KeyNumber(CueID)
 	Onyx.Key_ButtonPress("At")
 	Sleep(Settings.WaitTime)
-	Onyx.SelectCuelist(CLTarget)
+	Onyx.SelectCuelist(CuelistIDTarget)
 	Sleep(Settings.WaitTime)
 	Onyx.Key_ButtonPress("Enter")
 	Sleep(Settings.WaitTime)
 end
 
-function KeyNumber(number)
-	if string.find(number, "%d", 1, false) then
-		a = string.match(number, "(.+)")
+function KeyNumber(Number)
+	if string.find(Number, "%d", 1, false) then
+		a = string.match(Number, "(.+)")
 		for c in a:gmatch "." do
 			Onyx.Key_ButtonPress("Num" .. c)
 		end
@@ -214,16 +214,17 @@ function KeyNumber(number)
 	end
 end
 
-function RecordCuelist(number)
+function RecordCuelist(CuelistID)
 	Onyx.Key_ButtonPress("Record")
 	Sleep(Settings.WaitTime)
 	Onyx.Key_ButtonPress("Slash")
 	Sleep(Settings.WaitTime)
 	Onyx.Key_ButtonPress("Slash")
-	KeyNumber(number)
+	KeyNumber(CuelistID)
 	Onyx.Key_ButtonPress("Enter")
 	Sleep(Settings.WaitTime)
 	Onyx.Key_ButtonPress("Enter")
+	return true
 end
 
 function CheckEmpty(Chain)
@@ -234,40 +235,43 @@ function CheckEmpty(Chain)
 	end
 end
 
-function GetPresetName(PresetType, PresetNumber)
+function GetPresetName(PresetType, PresetID)
 	if PresetType == PresetName.PanTilt then
-		return CheckEmpty(Onyx.GetPanTiltPresetName(PresetNumber))
+		return CheckEmpty(Onyx.GetPanTiltPresetName(PresetID))
 	elseif PresetType == PresetName.Color then
-		return CheckEmpty(Onyx.GetColorPresetName(PresetNumber))
+		return CheckEmpty(Onyx.GetColorPresetName(PresetID))
 	elseif PresetType == PresetName.Intensity then
-		return CheckEmpty(Onyx.GetIntensityPresetName(PresetNumber))
+		return CheckEmpty(Onyx.GetIntensityPresetName(PresetID))
 	elseif PresetType == PresetName.Gobo then
-		return CheckEmpty(Onyx.GetGoboPresetName(PresetNumber))
+		return CheckEmpty(Onyx.GetGoboPresetName(PresetID))
 	elseif PresetType == PresetName.Beam then
-		return CheckEmpty(Onyx.GetBeamPresetName(PresetNumber))
+		return CheckEmpty(Onyx.GetBeamPresetName(PresetID))
 	elseif PresetType == PresetName.BeamFX then
-		return CheckEmpty(Onyx.GetBeamFXPresetName(PresetNumber))
+		return CheckEmpty(Onyx.GetBeamFXPresetName(PresetID))
 	elseif PresetType == PresetName.Framing then
-		return CheckEmpty(Onyx.GetFramingPresetName(PresetNumber))
+		return CheckEmpty(Onyx.GetFramingPresetName(PresetID))
+	else
+		return false
 	end
 end
 
-function DeletePreset(PresetType, CuelistNumber)
+function DeletePreset(PresetType, PresetID)
 	if PresetType == PresetName.PanTilt then
-		Onyx.DeletePanTiltPreset(CuelistNumber)
+		Onyx.DeletePanTiltPreset(PresetID)
 	elseif PresetType == PresetName.Color then
-		Onyx.DeleteColorPreset(CuelistNumber)
+		Onyx.DeleteColorPreset(PresetID)
 	elseif PresetType == PresetName.Intensity then
-		Onyx.DeleteIntensityPreset(CuelistNumber)
+		Onyx.DeleteIntensityPreset(PresetID)
 	elseif PresetType == PresetName.Gobo then
-		Onyx.DeleteGoboPreset(CuelistNumber)
+		Onyx.DeleteGoboPreset(PresetID)
 	elseif PresetType == PresetName.Beam then
-		Onyx.DeleteBeamPreset(CuelistNumber)
+		Onyx.DeleteBeamPreset(PresetID)
 	elseif PresetType == PresetName.BeamFX then
-		Onyx.DeleteBeamFXPreset(CuelistNumber)
+		Onyx.DeleteBeamFXPreset(PresetID)
 	elseif PresetType == PresetName.Framing then
-		Onyx.DeleteFramingPreset(CuelistNumber)
+		Onyx.DeleteFramingPreset(PresetID)
 	end
+	return true
 end
 
 function ListPreset(PresetType, PresetStart, PresetEnd)
