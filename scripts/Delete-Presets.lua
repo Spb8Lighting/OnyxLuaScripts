@@ -58,7 +58,7 @@ Content = {
     }
 }
 
--- Request the Start Preset ID n°
+-- Request the Preset Type
 InputSettings = {
     Question = Content.Select.Question,
     Description = Content.Select.Description,

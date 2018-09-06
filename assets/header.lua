@@ -49,6 +49,15 @@ Appearance = {
 	Pink = "#-52996",
 	Magenta = "#-65333"
 }
+DefaultAppearance = {
+	Intensity = Appearance.White,
+	PanTilt = Appearance.Red,
+	Color = Appearance.White,
+    Gobo = Appearance.Green,
+	Beam = Appearance.Yellow,
+	BeamFX = Appearance.Cyan,
+	Framing = Appearance.Magenta
+}
 BPMTiming = {
 	Half = "1/2",
 	Third = "1/3",
@@ -59,7 +68,9 @@ Word = {
 	Cancel = "Cancel",
 	Reset = "Reset",
 	Yes = "Yes",
-	No = "No"
+	No = "No",
+	Vertical = "Vertical",
+	Horizontal = "Horizontal"
 }
 Form = {
 	Ok = {
@@ -243,9 +254,13 @@ function RecordCuelist(CuelistID)
 	return true
 end
 
-function CheckEmpty(Chain)
+function CheckEmpty(Chain, default)
 	if Chain == nil or Chain == "" then
-		return "---"
+		if default then
+			return default
+		else
+			return "---"
+		end
 	else
 		return Chain
 	end
@@ -266,6 +281,26 @@ function GetPresetName(PresetType, PresetID)
 		return CheckEmpty(Onyx.GetBeamFXPresetName(PresetID))
 	elseif PresetType == PresetName.Framing then
 		return CheckEmpty(Onyx.GetFramingPresetName(PresetID))
+	else
+		return false
+	end
+end
+
+function GetPresetAppearance(PresetType, PresetID)
+	if PresetType == PresetName.PanTilt then
+		return CheckEmpty(Onyx.GetPanTiltPresetAppearance(PresetID), DefaultAppearance.PanTilt)
+	elseif PresetType == PresetName.Color then
+		return CheckEmpty(Onyx.GetColorPresetAppearance(PresetID), DefaultAppearance.Color)
+	elseif PresetType == PresetName.Intensity then
+		return CheckEmpty(Onyx.GetIntensityPresetAppearance(PresetID), DefaultAppearance.Intensity)
+	elseif PresetType == PresetName.Gobo then
+		return CheckEmpty(Onyx.GetGoboPresetAppearance(PresetID), DefaultAppearance.Gobo)
+	elseif PresetType == PresetName.Beam then
+		return CheckEmpty(Onyx.GetBeamPresetAppearance(PresetID), DefaultAppearance.Beam)
+	elseif PresetType == PresetName.BeamFX then
+		return CheckEmpty(Onyx.GetBeamFXPresetAppearance(PresetID), DefaultAppearance.BeamFX)
+	elseif PresetType == PresetName.Framing then
+		return CheckEmpty(Onyx.GetFramingPresetAppearance(PresetID), DefaultAppearance.Framing)
 	else
 		return false
 	end
@@ -297,7 +332,8 @@ function ListPreset(PresetType, PresetIDStart, PresetIDEnd)
 			Presets,
 			{
 				id = i,
-				name = GetPresetName(PresetType, i)
+				name = GetPresetName(PresetType, i),
+				appearance = GetPresetAppearance(PresetType, i)
 			}
 		)
 	end

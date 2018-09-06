@@ -106,6 +106,12 @@ Inside the [header.lua](https://github.com/Spb8Lighting/OnyxLuaScripts/blob/mast
     <p>This function will return the Preset name of PresetType with ID PresetID. If there is no Preset, it will return "--"</p>
 </details>
 <details>
+    <summary>GetPresetAppearance(PresetType, PresetID)</summary>
+    <p>Arguments: string PresetType [Intensity|PanTilt|Color|Gobo|Beam|BeamFX|Framing], int PresetID</p>
+    <p>Dependency: CheckEmpty()</p>
+    <p>This function will return the Preset apperance of PresetType with ID PresetID. If there is no Preset apperance, it will return the DefaultPresetAppearance of PresetType</p>
+</details>
+<details>
     <summary>RecordCuelist(CuelistID)</summary>
     <p>Arguments: int CuelistID</p>
     <p>Dependency: KeyNumber()</p>
