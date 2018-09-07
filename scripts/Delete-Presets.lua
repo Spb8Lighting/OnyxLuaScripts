@@ -11,6 +11,8 @@
 ---------------
 -- Changelog --
 ---------------
+-- 07-09-2018 - 1.4: Update function to check the PresetType
+--                  + Add some block of comment for clearer code reading
 -- 07-09-2018 - 1.3: The "To ID Preset" is now automatically populate with the "From ID Preset" +1
 -- 06-09-2018 - 1.2: Add Framing Preset, Add list of preset to be deleted in the final report before validation
 -- 06-09-2018 - 1.1: Add a drop down menu Preset Selection instead of having as lua file than preset type
@@ -25,7 +27,7 @@ Settings = {
 }
 
 ScriptInfos = {
-    version = "1.3",
+    version = "1.4",
     name = "DeleteRangeOfPreset"
 }
 
@@ -34,6 +36,10 @@ ScriptInfos = {
 ----------------------------------------------------
 -- Main Script - dont change if you don't need to --
 ----------------------------------------------------
+
+--------------------------
+-- Sentence and Wording --
+--------------------------
 
 Content = {
     StopMessage = "Stopped!" .. "\r\n\t" .. "The Preset type defined in the script configuration is not supported",
@@ -58,32 +64,30 @@ Content = {
     }
 }
 
--- Request the Preset Type
+--------------------------
+-- Collect Informations --
+--------------------------
+
+--# REQUEST the Preset Type # --
+--------------------------------
+
 InputSettings = {
     Question = Content.Select.Question,
     Description = Content.Select.Description,
     Buttons = Form.OkCancel,
     DefaultButton = Word.Ok,
-    DropDown = {"Intensity", "PanTilt", "Color", "Gobo", "Beam", "BeamFX", "Framing"},
-    DropDownDefault = "Intensity",
+    DropDown = Form.Preset,
+    DropDownDefault = PresetName.Intensity,
     Cancel = true
 }
+
 PresetType = InputDropDown(InputSettings)
 
 -- If not PresetType defined, exit
 if Cancelled(PresetType) then
     goto EXIT
 else
-    if PresetType == PresetName.PanTilt then
-        Settings.Type = "Pan/Tilt"
-    elseif
-        PresetType == PresetName.Color or
-        PresetType == PresetName.Intensity or
-        PresetType == PresetName.Gobo or
-        PresetType == PresetName.Beam or
-        PresetType == PresetName.BeamFX or
-        PresetType == PresetName.Framing
-    then
+    if PresetName[PresetType] then
         Settings.Type = PresetType
     else
         LogInformation(Content.StopMessage)
@@ -91,6 +95,9 @@ else
     end
     LogInformation("Preset Type: " .. PresetType .. "\r\n\t" .. "Delete " .. PresetType .. " presets")
 end
+
+--# REQUEST the Cuelist Range # --
+----------------------------------
 
 -- Request the Start Preset ID n°
 InputSettings = {
@@ -100,23 +107,32 @@ InputSettings = {
     DefaultButton = Word.Ok,
     Cancel = true
 }
+
 Settings.PTStart = InputNumber(InputSettings)
+
 if Cancelled(Settings.PTStart) then
     goto EXIT
 end
+
 -- Request the Last Preset ID n°
 InputSettings.Question = Content.To.Question
 InputSettings.Description = Content.To.Description
 InputSettings.CurrentValue = Settings.PTStart + 1
+
 Settings.PTEnd = InputNumber(InputSettings)
+
 if Cancelled(Settings.PTEnd) then
     goto EXIT
 end
 
+--# LOG all user choice # --
+----------------------------
+
+-- RESUME of action to be performed
 LogActivity(Content.Options)
 LogActivity("\r\n\t" .. "- Delete " .. PresetType .. " Presets, from n°" .. Settings.PTStart .." to n°" .. Settings.PTEnd )
 
--- Get all preset name
+-- DETAIL of impacted presets
 LogActivity("\r\n" .. Content.PresetList)
 
 Presets = ListPreset(PresetType, Settings.PTStart, Settings.PTEnd)
@@ -125,19 +141,29 @@ for i, Preset in pairs(Presets) do
     LogActivity("\r\n\t" .. '- n°' .. Preset.id .. ' ' .. Preset.name)
 end
 
+--# USER Validation # --
+------------------------
+
 InputValidationSettings = {
     Question = Content.Validation.Question,
     Description = Content.Validation.Description .. "\n\r\n\r" .. GetActivity(),
     Buttons = Form.YesNo,
     DefaultButton = Word.Yes
 }
+
 Settings.Validation = InputYesNo(InputValidationSettings)
 
+--------------------------
+--      Execution       --
+--------------------------
+
 if Settings.Validation then
+    -- Iterate through the Cuelist list
     for CuelistNumber = Settings.PTStart, Settings.PTEnd do
         DeletePreset(PresetType, CuelistNumber)
         Sleep(Settings.WaitTime)
     end
+    -- Display a end pop-up
     FootPrint(Content.Done)
 else
     Cancelled()
