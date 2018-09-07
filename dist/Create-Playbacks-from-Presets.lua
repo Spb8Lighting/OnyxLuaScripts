@@ -21,7 +21,8 @@ Settings = {
     WaitTime = 0.5,
     HarmonizeCLName = true, -- Default: true > If preset name has the group name, the script will remove take the preset name without the group name to format the cuelist name
     Optimize = true, -- Default: true > Activate optimization to speed up execution (take care, this option can break the result) [-6 x Waitime per playback button]
-    RenameCue = false -- Default: false > Activate the cue Renaming with preset name (increase the performance)
+    RenameCue = false, -- Default: false > Activate the cue Renaming with preset name (increase the performance)
+    Step = 1
 }
 
 ScriptInfos = {
@@ -34,20 +35,28 @@ ScriptInfos = {
 ---------------
 -- Changelog --
 ---------------
--- 07-09-2018 - 1.2: Fix input number max issue, reword some function parameter name, add ListCuelit(), add the possibility to define default value for InputNumber and InputFloatNumber
+-- 07-09-2018 - 1.2: Fix input number max issue
+--              + add Word.Script.Cancel text value
+--              + add Form.Preset list values
+--              + update Default Preset Appearance to match Onyx Colors
+--              + reword some function parameter name
+--              + add ListCuelit()
+--              + add the possibility to define default value for InputNumber and InputFloatNumber
 -- 06-09-2018 - 1.1: Add Preset Name Framing, Add Generic GetPresetName, Add Generic DeletePreset
 -- 05-09-2018 - 1.0: Creation
 
 --------------------
 --    Variables   --
 --------------------
+
 if Settings.WaitTime == nil or Settings.WaitTime == "" then
 	Settings.WaitTime = 0.5
 end
+
 PresetName = {
+    Intensity = "Intensity",
 	PanTilt = "PanTilt",
 	Color = "Color",
-	Intensity = "Intensity",
 	Gobo = "Gobo",
 	Beam = "Beam",
 	BeamFX = "BeamFX",
@@ -61,6 +70,7 @@ ScriptInfos = {
 	contact = "sylvain.guiblain@gmail.com",
 	website = "https://github.com/Spb8Lighting/OnyxLuaScripts"
 }
+
 Infos = {
 	Sentence = "Scripted by " .. ScriptInfos.author .. "\r\n\r\n" .. ScriptInfos.contact .. "\r\n\r\n" .. ScriptInfos.website,
 	Script = ScriptInfos.name .. " v" .. ScriptInfos.version
@@ -80,6 +90,7 @@ Appearance = {
 	Pink = "#-52996",
 	Magenta = "#-65333"
 }
+
 DefaultAppearance = {
 	Intensity = Appearance.White,
 	PanTilt = Appearance.Red,
@@ -89,12 +100,17 @@ DefaultAppearance = {
 	BeamFX = Appearance.Cyan,
 	Framing = Appearance.Magenta
 }
+
 BPMTiming = {
 	Half = "1/2",
 	Third = "1/3",
 	Quarter = "1/4"
 }
+
 Word = {
+    Script = {
+        Cancel = "Script has been cancelled! Nothing performed."
+    },
 	Ok = "Ok",
 	Cancel = "Cancel",
 	Reset = "Reset",
@@ -103,6 +119,7 @@ Word = {
 	Vertical = "Vertical",
 	Horizontal = "Horizontal"
 }
+
 Form = {
 	Ok = {
 		Word.Ok
@@ -114,7 +131,16 @@ Form = {
 	YesNo = {
 		Word.Yes,
 		Word.No
-	}
+    },
+    Preset = {
+        PresetName.Intensity,
+        PresetName.PanTilt,
+        PresetName.Color,
+        PresetName.Gobo,
+        PresetName.Beam,
+        PresetName.BeamFX,
+        PresetName.Framing
+    }
 }
 
 -- Get Onyx Software object
@@ -142,12 +168,13 @@ end
 
 function Cancelled(variable)
 	if variable == nil or variable == "" then
-		FootPrint("Script has been cancelled! Nothing performed.")
+		FootPrint(Word.Script.Cancel)
 		return true
 	else
 		return false
 	end
 end
+
 function CheckInput(Infos, Answer)
 	if Answer["button"] == Word.Yes then
 		Answer["input"] = true
@@ -161,6 +188,7 @@ function CheckInput(Infos, Answer)
 	end
 	return Answer
 end
+
 function Input(Infos, Type)
 	-- Create the Prompt
 	Prompt = CreatePrompt(Infos.Question, Infos.Description)
@@ -175,6 +203,7 @@ function Input(Infos, Type)
 	-- Return the prompt
 	return Prompt
 end
+
 function InputDropDown(Infos)
 	-- Get the IntegerInput Prompt with default settings
 	Prompt = Input(Infos, "DropDown")
@@ -184,11 +213,13 @@ function InputDropDown(Infos)
 
 	return ShowInput(Prompt, Infos)
 end
+
 function InputYesNo(Infos)
 	-- Get the IntegerInput Prompt with default settings
 	Prompt = Input(Infos)
 	return ShowInput(Prompt, Infos)
 end
+
 function InputNumber(Infos)
 	-- Get the IntegerInput Prompt with default settings
 	Prompt = Input(Infos, "IntegerInput")
@@ -201,6 +232,7 @@ function InputNumber(Infos)
 
 	return ShowInput(Prompt, Infos)
 end
+
 function InputFloatNumber(Infos)
 	-- Get the IntegerInput Prompt with default settings
 	Prompt = Input(Infos, "FloatInput")
@@ -212,6 +244,7 @@ function InputFloatNumber(Infos)
 
 	return ShowInput(Prompt, Infos)
 end
+
 function ShowInput(Prompt, Infos)
 	-- Display the prompt
 	Answer = Prompt.Show()
@@ -249,16 +282,16 @@ function CopyCue(CuelistIDSource, CueID, CuelistIDTarget)
 	Sleep(Settings.WaitTime)
 	Onyx.SelectCuelist(CuelistIDSource)
 	Sleep(Settings.WaitTime)
-	Onyx.Key_ButtonPress("Copy")
+	Onyx.Key_ButtonClick("Copy")
 	Sleep(Settings.WaitTime)
-	Onyx.Key_ButtonPress("Cue")
+	Onyx.Key_ButtonClick("Cue")
 	Sleep(Settings.WaitTime)
 	KeyNumber(CueID)
-	Onyx.Key_ButtonPress("At")
+	Onyx.Key_ButtonClick("At")
 	Sleep(Settings.WaitTime)
 	Onyx.SelectCuelist(CuelistIDTarget)
 	Sleep(Settings.WaitTime)
-	Onyx.Key_ButtonPress("Enter")
+	Onyx.Key_ButtonClick("Enter")
 	Sleep(Settings.WaitTime)
 end
 
@@ -266,22 +299,22 @@ function KeyNumber(Number)
 	if string.find(Number, "%d", 1, false) then
 		a = string.match(Number, "(.+)")
 		for c in a:gmatch "." do
-			Onyx.Key_ButtonPress("Num" .. c)
+			Onyx.Key_ButtonClick("Num" .. c)
 		end
 		Sleep(Settings.WaitTime)
 	end
 end
 
 function RecordCuelist(CuelistID)
-	Onyx.Key_ButtonPress("Record")
+	Onyx.Key_ButtonClick("Record")
 	Sleep(Settings.WaitTime)
-	Onyx.Key_ButtonPress("Slash")
+	Onyx.Key_ButtonClick("Slash")
 	Sleep(Settings.WaitTime)
-	Onyx.Key_ButtonPress("Slash")
+	Onyx.Key_ButtonClick("Slash")
 	KeyNumber(CuelistID)
-	Onyx.Key_ButtonPress("Enter")
+	Onyx.Key_ButtonClick("Enter")
 	Sleep(Settings.WaitTime)
-	Onyx.Key_ButtonPress("Enter")
+	Onyx.Key_ButtonClick("Enter")
 	return true
 end
 
@@ -370,6 +403,7 @@ function ListPreset(PresetType, PresetIDStart, PresetIDEnd)
 	end
 	return Presets
 end
+
 function ListCuelist(CuelistIDStart, CuelistIDEnd)
 	Cuelists = {}
 	for i = CuelistIDStart, CuelistIDEnd, 1 do
@@ -393,19 +427,25 @@ HeadPrint()
 -- Main Script - dont change if you don't need to --
 ----------------------------------------------------
 
+--------------------------
+-- Sentence and Wording --
+--------------------------
+
 Content = {
     StopMessage = "Stopped!" .. "\r\n\t" .. "The Preset type defined in the script configuration is not supported",
     Done = "Deletion Ended!",
     Options = "Delete Options:",
     Presets = {
         Options = "Presets Options:",
-        PresetList = "Preset list:"
+        List = "Preset list:"
     },
     Select = {
         Question = "Which type of preset will be used to create playback?",
         Description = "Please select the preset type to create playback from the list:"
     },
     Groups = {
+        Options = "Groups Options:",
+        List = "Group list:",
         Question = "How many fixture groups will be used?",
         Description = "Please indicate the quantity of groups where to create playbacks:"
     },
@@ -424,6 +464,7 @@ Content = {
         }
     },
     Playback = {
+        Options = "Playback Options:",
         Page = {
             Question = "Which playback page n° to create playbacks?",
             Description = "Indicate playback page ID where to create playbacks:"
@@ -447,44 +488,17 @@ Content = {
             Description = "Indicate the awaiting Cue fade time (in seconds)"
         }
     },
+    Records = {
+        Options = "Records Options:"
+    },
     Validation = {
         Question = "Do you want to create the playbacks?"
     }
 }
 
-Settings.Step = 1
-
--- Request the Preset Type
-InputSettings = {
-    Question = Content.Select.Question,
-    Description = Content.Select.Description,
-    Buttons = Form.OkCancel,
-    DefaultButton = Word.Ok,
-    DropDown = {"Intensity", "PanTilt", "Color", "Gobo", "Beam", "BeamFX", "Framing"},
-    DropDownDefault = "Intensity",
-    Cancel = true
-}
-PresetType = InputDropDown(InputSettings)
-
--- If not PresetType defined, exit
-if Cancelled(PresetType) then
-    goto EXIT
-else
-    if PresetType == PresetName.PanTilt then
-        Settings.Type = "Pan/Tilt"
-    elseif
-        PresetType == PresetName.Color or PresetType == PresetName.Intensity or PresetType == PresetName.Gobo or
-            PresetType == PresetName.Beam or
-            PresetType == PresetName.BeamFX or
-            PresetType == PresetName.Framing
-     then
-        Settings.Type = PresetType
-    else
-        LogInformation(Content.StopMessage)
-        goto EXIT
-    end
-    LogInformation("Preset Type: " .. PresetType .. "\r\n\t" .. "Create " .. PresetType .. " Playbacks")
-end
+--------------------------
+--      Functions       --
+--------------------------
 
 function SleepOption()
     if Settings.Optimize == false then
@@ -520,6 +534,41 @@ function CuelistName(GroupName, NamePreset, OnlyPresetName)
     end
 end
 
+--------------------------
+-- Collect Informations --
+--------------------------
+
+--# REQUEST the Preset Type # --
+--------------------------------
+
+InputSettings = {
+    Question = Content.Select.Question,
+    Description = Content.Select.Description,
+    Buttons = Form.OkCancel,
+    DefaultButton = Word.Ok,
+    DropDown = Form.Preset,
+    DropDownDefault = PresetName.Intensity,
+    Cancel = true
+}
+
+PresetType = InputDropDown(InputSettings)
+
+-- If not PresetType defined, exit
+if Cancelled(PresetType) then
+    goto EXIT
+else
+    if PresetName[PresetType] then
+        Settings.Type = PresetType
+    else
+        LogInformation(Content.StopMessage)
+        goto EXIT
+    end
+    LogInformation("Preset Type: " .. PresetType .. "\r\n\t" .. "Create " .. PresetType .. " Playbacks")
+end
+
+--# REQUEST the Fixtures Group # --
+-----------------------------------
+
 -- Request EU number of groups to be threated
 InputSettings = {
     Question = Content.Groups.Question,
@@ -528,7 +577,9 @@ InputSettings = {
     DefaultButton = Word.Ok,
     Cancel = true
 }
+
 Settings.NbOfGroups = InputNumber(InputSettings)
+
 if Cancelled(Settings.NbOfGroups) then
     goto EXIT
 end
@@ -539,25 +590,18 @@ Settings.Groups = {}
 -- Request EU details for each group
 for i = 1, Settings.NbOfGroups, 1 do
     -- Request the Group ID
-    InputSettings = {
-        Question = "Group n°" .. i .. " ID",
-        Description = "Please indicate the Group n°" .. i .. " ID:",
-        Buttons = Form.OkCancel,
-        DefaultButton = Word.Ok,
-        Cancel = true
-    }
-    GroupID = InputNumber(InputSettings)
+    InputSettings.Question = "Group n°" .. i .. " ID"
+    InputSettings.Description = "Please indicate the Group n°" .. i .. " ID:"
+
+    local GroupID = InputNumber(InputSettings)
+
     if Cancelled(GroupID) then
         goto EXIT
     end
+
     table.insert(Settings.Groups, {id = GroupID, name = Onyx.GetGroupName(GroupID)})
 end
 
--- Feedback to EU about group declaration
-LogActivity(Settings.NbOfGroups .. " groups declared:")
-for i, Group in pairs(Settings.Groups) do
-    LogActivity("\t" .. "- n°" .. Group.id .. " - " .. Group.name)
-end
 
 -- Request the Start Preset ID n°
 InputSettings = {
@@ -567,40 +611,36 @@ InputSettings = {
     DefaultButton = Word.Ok,
     Cancel = true
 }
-Settings.PTStart = InputNumber(InputSettings)
-if Cancelled(Settings.PTStart) then
+
+Settings.PresetIDStart = InputNumber(InputSettings)
+
+if Cancelled(Settings.PresetIDStart) then
     goto EXIT
 end
 -- Request the Last Preset ID n°
 InputSettings.Question = Content.Cuelist.To.Question
 InputSettings.Description = Content.Cuelist.To.Description
-InputSettings.CurrentValue = Settings.PTStart + 1
-Settings.PTEnd = InputNumber(InputSettings)
-if Cancelled(Settings.PTEnd) then
+InputSettings.CurrentValue = Settings.PresetIDStart + 1
+
+Settings.PresetIDEnd = InputNumber(InputSettings)
+
+if Cancelled(Settings.PresetIDEnd) then
     goto EXIT
 end
 
--- Extract Preset Name, ID and Appearance
-LogActivity(Content.Presets.Options)
-LogActivity("\r\n\t" .. "- " .. PresetType .. " Presets, from n°" .. Settings.PTStart .. " to n°" .. Settings.PTEnd)
+-- Compute the number of Presets
+Settings.NumberOfPreset = Settings.PresetIDEnd - Settings.PresetIDStart + 1
 
--- Get all preset name
-LogActivity("\r\n" .. Content.Presets.PresetList)
-
-Presets = ListPreset(PresetType, Settings.PTStart, Settings.PTEnd)
-
-Settings.NumberOfPreset = Settings.PTEnd - Settings.PTStart + 1
-
-for i, Preset in pairs(Presets) do
-    LogActivity("\r\n\t" .. "- n°" .. Preset.id .. " " .. Preset.name)
-end
-
--- Request EU informations about playback
+--# REQUEST the Playback Informations # --
+------------------------------------------
 
 -- Starting playback button page
 InputSettings.Question = Content.Playback.Page.Question
 InputSettings.Description = Content.Playback.Page.Description
+InputSettings.CurrentValue = 1
+
 Settings.PlaybackButtonPage = InputNumber(InputSettings)
+
 if Cancelled(Settings.PlaybackButtonPage) then
     goto EXIT
 end
@@ -608,7 +648,9 @@ end
 -- First playback button
 InputSettings.Question = Content.Playback.Button.Question
 InputSettings.Description = Content.Playback.Button.Description
+
 Settings.PlaybackButtonStart = InputNumber(InputSettings)
+
 if Cancelled(Settings.PlaybackButtonStart) then
     goto EXIT
 end
@@ -623,75 +665,118 @@ InputSettings = {
     DropDownDefault = Word.Vertical,
     Cancel = true
 }
+
 Settings.TextOrientation = InputDropDown(InputSettings)
 
 -- Playback Grid Width
 InputSettings.Question = Content.Playback.Grid.Question
 InputSettings.Description = Content.Playback.Grid.Description
-InputSettings.CurrentValue = Settings.NbOfGroups
+InputSettings.CurrentValue = Settings.NumberOfPreset
+
 Settings.PlaybackWidth = InputNumber(InputSettings)
+
 if Cancelled(Settings.PlaybackButtonPage) then
     goto EXIT
 end
 
--- Feedback to EU about playback
-LogActivity("Playback options:")
-LogActivity("\t" .. "- Playback page n°" .. Settings.PlaybackButtonPage)
-LogActivity("\t" .. "- Start from Playback button n°" .. Settings.PlaybackButtonStart)
-Settings.GridSize = Settings.NbOfGroups .. " groups of " .. Settings.NumberOfPreset .. " presets"
-LogActivity(
-    "\t" ..
-        "- " ..
-            Settings.TextOrientation ..
-                " arrangement for " .. Settings.GridSize .. " on " .. Settings.PlaybackWidth .. " grid width"
-)
 
--- Request EU the first Cuelist Number to record
-Settings.StartingEmptyCueList = Onyx.GetNextCuelistNumber()
--- Request the Cue Fade Time
+--# REQUEST the Cue Fading Time # --
+------------------------------------
+
 InputSettings.Question = Content.Cue.Time.Question
 InputSettings.Description = Content.Cue.Time.Description
+InputSettings.CurrentValue = 0
+
 Settings.TimeFade = InputFloatNumber(InputSettings)
+
 if Cancelled(Settings.TimeFade) then
     goto EXIT
 end
 
--- Request the Cuelist Release Time
+--# REQUEST the Cuelist Release Time # --
+-----------------------------------------
+
 InputSettings.Question = Content.Cuelist.Time.Question
 InputSettings.Description = Content.Cuelist.Time.Description
+InputSettings.CurrentValue = 0
+
 Settings.TimeRelease = InputFloatNumber(InputSettings)
+
 if Cancelled(Settings.TimeRelease) then
     goto EXIT
 end
 
--- Feedback to EU about playback
-LogActivity("Record options:")
-LogActivity("\t" .. "- new Cuelist from n°" .. Settings.StartingEmptyCueList)
-LogActivity("\t" .. "- Cue Fade Time: " .. Settings.TimeFade .. "s")
-LogActivity("\t" .. "- Cuelist Release Time: " .. Settings.TimeRelease .. "s")
+--# LOG all user choice # --
+----------------------------
+
+-- RESUME of GROUPS
+LogActivity(Content.Groups.Options)
+LogActivity("\r\n\t" .. "- " .. Settings.NbOfGroups .. " group(s)")
+
+-- DETAIL of GROUPS
+LogActivity("\r\n" .. Content.Groups.List)
+for i, Group in pairs(Settings.Groups) do
+    LogActivity("\r\n\t" .. "- n°" .. Group.id .. " - " .. Group.name)
+end
+
+-- RESUME of PRESETS
+LogActivity("\r\n" .. Content.Presets.Options)
+LogActivity("\r\n\t" .. "- " .. PresetType .. " Presets, from n°" .. Settings.PresetIDStart .. " to n°" .. Settings.PresetIDEnd)
+
+-- DETAIL of PRESETS
+LogActivity("\r\n" .. Content.Presets.List)
+
+Settings.Presets = ListPreset(PresetType, Settings.PresetIDStart, Settings.PresetIDEnd)
+
+for i, Preset in pairs(Settings.Presets) do
+    LogActivity("\r\n\t" .. "- n°" .. Preset.id .. " " .. Preset.name)
+end
+
+-- RESUME of PLAYBACK
+Settings.GridSize = Settings.NbOfGroups .. " groups of " .. Settings.NumberOfPreset .. " presets"
+
+LogActivity("\r\n" .. Content.Playback.Options)
+LogActivity("\r\n\t" .. "- Playback page n°" .. Settings.PlaybackButtonPage)
+LogActivity("\r\n\t" .. "- Playback button n°" .. Settings.PlaybackButtonStart)
+LogActivity("\r\n\t" .. "- " .. Settings.TextOrientation .. " arrangement for " .. Settings.GridSize .. " on " .. Settings.PlaybackWidth .. " grid width")
+
+-- Get the next Cuelist ID available
+Settings.StartingEmptyCueList = Onyx.GetNextCuelistNumber()
+
+-- RESUME of TIMING
+LogActivity(Content.Records.Options)
+LogActivity("\r\n\t" .. "- Create Cuelist(s) from n°" .. Settings.StartingEmptyCueList)
+LogActivity("\r\n\t" .. "- Cue Fade Time: " .. Settings.TimeFade .. "s")
+LogActivity("\r\n\t" .. "- Cuelist Release Time: " .. Settings.TimeRelease .. "s")
+
+--# USER Validation # --
+------------------------
 
 InputValidationSettings = {
     Question = Content.Validation.Question,
-    Description = "Do you agree to generate " ..
-        PresetType ..
-            " Playbacks for " ..
-                Settings.GridSize ..
-                    ", on Playback page n°" .. Settings.PlaybackButtonPage .. "?" .. "\n\r\n\r" .. GetActivity(),
+    Description = "Do you agree to generate " .. PresetType .. " Playbacks for " .. Settings.GridSize .. ", on Playback page n°" .. Settings.PlaybackButtonPage .. "?" .. "\n\r\n\r" .. GetActivity(),
     Buttons = Form.YesNo,
     DefaultButton = Word.Yes
 }
+
 Settings.Validation = InputYesNo(InputValidationSettings)
+
+--------------------------
+--      Execution       --
+--------------------------
 
 Counter = {
     Cuelist = Settings.StartingEmptyCueList,
     PlaybackNumber = Settings.PlaybackButtonStart
 }
+
 ::START::
+
 if Settings.Validation then
-    Onyx.Key("Record") -- Trick to avoid first empty playback button, don't know why it happens ...
-    for i, Group in pairs(Groups) do
+    Onyx.Key_ButtonClick("Record") -- Trick to avoid first empty playback button, don't know why it happens ...
+    for i, Group in pairs(Settings.Groups) do
         --¨For each preset
-        for i, Preset in pairs(Presets) do
+        for i, Preset in pairs(Settings.Presets) do
             Onyx.ClearProgrammer()
             if Settings.Step == 1 then
                 Sleep(Settings.WaitTime)
@@ -709,23 +794,23 @@ if Settings.Validation then
                     Onyx.SelectBeamPreset(Preset.id)
                 end
                 Sleep(Settings.WaitTime)
-                Onyx.RecordCuelist(Counter.Cuelist)
+                RecordCuelist(Counter.Cuelist)
                 Sleep(Settings.WaitTime)
-                Onyx.CopyCuelistFromDirectoryToPlaybackButton(
+                Onyx.CopyCuelistToPlaybackButton(
                     Counter.Cuelist,
                     Settings.PlaybackButtonPage,
                     Counter.PlaybackNumber
                 )
                 Sleep(Settings.WaitTime)
-                Onyx.SetSelectedCuelistName(CuelistName(Group.name, Preset.name, false))
+                Onyx.RenameCuelist(CuelistName(Group.name, Preset.name, false))
                 if Settings.RenameCue == true then
                     Sleep(Settings.WaitTime)
                     Onyx.RenameCue(1, CuelistName(Group.name, Preset.name, false))
                 end
                 SleepOption()
-                Onyx.SetCueTimeFade(1, Settings.TimeFade)
+                Onyx.SetCueFadeTime(1, Settings.TimeFade)
                 SleepOption()
-                Onyx.SetCuelistTimeRelease(Counter.Cuelist, Settings.TimeRelease)
+                Onyx.SetCuelistReleaseTime(Counter.Cuelist, Settings.TimeRelease)
             elseif Settings.Step == 2 then
                 Onyx.SelectCuelist(Counter.Cuelist)
                 Onyx.SetCuelistAppearance(Counter.Cuelist, Preset.appearance) -- Apply the preset appearance to the cuelist

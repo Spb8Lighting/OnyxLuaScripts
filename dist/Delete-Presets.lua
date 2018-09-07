@@ -11,6 +11,9 @@
 ---------------
 -- Changelog --
 ---------------
+-- 07-09-2018 - 1.4: Update function to check the PresetType
+--                  + Add some block of comment for clearer code reading
+--                  + Rename some variables for clearer code reading
 -- 07-09-2018 - 1.3: The "To ID Preset" is now automatically populate with the "From ID Preset" +1
 -- 06-09-2018 - 1.2: Add Framing Preset, Add list of preset to be deleted in the final report before validation
 -- 06-09-2018 - 1.1: Add a drop down menu Preset Selection instead of having as lua file than preset type
@@ -25,7 +28,7 @@ Settings = {
 }
 
 ScriptInfos = {
-    version = "1.3",
+    version = "1.4",
     name = "DeleteRangeOfPreset"
 }
 
@@ -34,20 +37,28 @@ ScriptInfos = {
 ---------------
 -- Changelog --
 ---------------
--- 07-09-2018 - 1.2: Fix input number max issue, reword some function parameter name, add ListCuelit(), add the possibility to define default value for InputNumber and InputFloatNumber
+-- 07-09-2018 - 1.2: Fix input number max issue
+--              + add Word.Script.Cancel text value
+--              + add Form.Preset list values
+--              + update Default Preset Appearance to match Onyx Colors
+--              + reword some function parameter name
+--              + add ListCuelit()
+--              + add the possibility to define default value for InputNumber and InputFloatNumber
 -- 06-09-2018 - 1.1: Add Preset Name Framing, Add Generic GetPresetName, Add Generic DeletePreset
 -- 05-09-2018 - 1.0: Creation
 
 --------------------
 --    Variables   --
 --------------------
+
 if Settings.WaitTime == nil or Settings.WaitTime == "" then
 	Settings.WaitTime = 0.5
 end
+
 PresetName = {
+    Intensity = "Intensity",
 	PanTilt = "PanTilt",
 	Color = "Color",
-	Intensity = "Intensity",
 	Gobo = "Gobo",
 	Beam = "Beam",
 	BeamFX = "BeamFX",
@@ -61,6 +72,7 @@ ScriptInfos = {
 	contact = "sylvain.guiblain@gmail.com",
 	website = "https://github.com/Spb8Lighting/OnyxLuaScripts"
 }
+
 Infos = {
 	Sentence = "Scripted by " .. ScriptInfos.author .. "\r\n\r\n" .. ScriptInfos.contact .. "\r\n\r\n" .. ScriptInfos.website,
 	Script = ScriptInfos.name .. " v" .. ScriptInfos.version
@@ -80,6 +92,7 @@ Appearance = {
 	Pink = "#-52996",
 	Magenta = "#-65333"
 }
+
 DefaultAppearance = {
 	Intensity = Appearance.White,
 	PanTilt = Appearance.Red,
@@ -89,12 +102,17 @@ DefaultAppearance = {
 	BeamFX = Appearance.Cyan,
 	Framing = Appearance.Magenta
 }
+
 BPMTiming = {
 	Half = "1/2",
 	Third = "1/3",
 	Quarter = "1/4"
 }
+
 Word = {
+    Script = {
+        Cancel = "Script has been cancelled! Nothing performed."
+    },
 	Ok = "Ok",
 	Cancel = "Cancel",
 	Reset = "Reset",
@@ -103,6 +121,7 @@ Word = {
 	Vertical = "Vertical",
 	Horizontal = "Horizontal"
 }
+
 Form = {
 	Ok = {
 		Word.Ok
@@ -114,7 +133,16 @@ Form = {
 	YesNo = {
 		Word.Yes,
 		Word.No
-	}
+    },
+    Preset = {
+        PresetName.Intensity,
+        PresetName.PanTilt,
+        PresetName.Color,
+        PresetName.Gobo,
+        PresetName.Beam,
+        PresetName.BeamFX,
+        PresetName.Framing
+    }
 }
 
 -- Get Onyx Software object
@@ -142,12 +170,13 @@ end
 
 function Cancelled(variable)
 	if variable == nil or variable == "" then
-		FootPrint("Script has been cancelled! Nothing performed.")
+		FootPrint(Word.Script.Cancel)
 		return true
 	else
 		return false
 	end
 end
+
 function CheckInput(Infos, Answer)
 	if Answer["button"] == Word.Yes then
 		Answer["input"] = true
@@ -161,6 +190,7 @@ function CheckInput(Infos, Answer)
 	end
 	return Answer
 end
+
 function Input(Infos, Type)
 	-- Create the Prompt
 	Prompt = CreatePrompt(Infos.Question, Infos.Description)
@@ -175,6 +205,7 @@ function Input(Infos, Type)
 	-- Return the prompt
 	return Prompt
 end
+
 function InputDropDown(Infos)
 	-- Get the IntegerInput Prompt with default settings
 	Prompt = Input(Infos, "DropDown")
@@ -184,11 +215,13 @@ function InputDropDown(Infos)
 
 	return ShowInput(Prompt, Infos)
 end
+
 function InputYesNo(Infos)
 	-- Get the IntegerInput Prompt with default settings
 	Prompt = Input(Infos)
 	return ShowInput(Prompt, Infos)
 end
+
 function InputNumber(Infos)
 	-- Get the IntegerInput Prompt with default settings
 	Prompt = Input(Infos, "IntegerInput")
@@ -201,6 +234,7 @@ function InputNumber(Infos)
 
 	return ShowInput(Prompt, Infos)
 end
+
 function InputFloatNumber(Infos)
 	-- Get the IntegerInput Prompt with default settings
 	Prompt = Input(Infos, "FloatInput")
@@ -212,6 +246,7 @@ function InputFloatNumber(Infos)
 
 	return ShowInput(Prompt, Infos)
 end
+
 function ShowInput(Prompt, Infos)
 	-- Display the prompt
 	Answer = Prompt.Show()
@@ -249,16 +284,16 @@ function CopyCue(CuelistIDSource, CueID, CuelistIDTarget)
 	Sleep(Settings.WaitTime)
 	Onyx.SelectCuelist(CuelistIDSource)
 	Sleep(Settings.WaitTime)
-	Onyx.Key_ButtonPress("Copy")
+	Onyx.Key_ButtonClick("Copy")
 	Sleep(Settings.WaitTime)
-	Onyx.Key_ButtonPress("Cue")
+	Onyx.Key_ButtonClick("Cue")
 	Sleep(Settings.WaitTime)
 	KeyNumber(CueID)
-	Onyx.Key_ButtonPress("At")
+	Onyx.Key_ButtonClick("At")
 	Sleep(Settings.WaitTime)
 	Onyx.SelectCuelist(CuelistIDTarget)
 	Sleep(Settings.WaitTime)
-	Onyx.Key_ButtonPress("Enter")
+	Onyx.Key_ButtonClick("Enter")
 	Sleep(Settings.WaitTime)
 end
 
@@ -266,22 +301,22 @@ function KeyNumber(Number)
 	if string.find(Number, "%d", 1, false) then
 		a = string.match(Number, "(.+)")
 		for c in a:gmatch "." do
-			Onyx.Key_ButtonPress("Num" .. c)
+			Onyx.Key_ButtonClick("Num" .. c)
 		end
 		Sleep(Settings.WaitTime)
 	end
 end
 
 function RecordCuelist(CuelistID)
-	Onyx.Key_ButtonPress("Record")
+	Onyx.Key_ButtonClick("Record")
 	Sleep(Settings.WaitTime)
-	Onyx.Key_ButtonPress("Slash")
+	Onyx.Key_ButtonClick("Slash")
 	Sleep(Settings.WaitTime)
-	Onyx.Key_ButtonPress("Slash")
+	Onyx.Key_ButtonClick("Slash")
 	KeyNumber(CuelistID)
-	Onyx.Key_ButtonPress("Enter")
+	Onyx.Key_ButtonClick("Enter")
 	Sleep(Settings.WaitTime)
-	Onyx.Key_ButtonPress("Enter")
+	Onyx.Key_ButtonClick("Enter")
 	return true
 end
 
@@ -370,6 +405,7 @@ function ListPreset(PresetType, PresetIDStart, PresetIDEnd)
 	end
 	return Presets
 end
+
 function ListCuelist(CuelistIDStart, CuelistIDEnd)
 	Cuelists = {}
 	for i = CuelistIDStart, CuelistIDEnd, 1 do
@@ -392,6 +428,10 @@ HeadPrint()
 ----------------------------------------------------
 -- Main Script - dont change if you don't need to --
 ----------------------------------------------------
+
+--------------------------
+-- Sentence and Wording --
+--------------------------
 
 Content = {
     StopMessage = "Stopped!" .. "\r\n\t" .. "The Preset type defined in the script configuration is not supported",
@@ -416,32 +456,30 @@ Content = {
     }
 }
 
--- Request the Preset Type
+--------------------------
+-- Collect Informations --
+--------------------------
+
+--# REQUEST the Preset Type # --
+--------------------------------
+
 InputSettings = {
     Question = Content.Select.Question,
     Description = Content.Select.Description,
     Buttons = Form.OkCancel,
     DefaultButton = Word.Ok,
-    DropDown = {"Intensity", "PanTilt", "Color", "Gobo", "Beam", "BeamFX", "Framing"},
-    DropDownDefault = "Intensity",
+    DropDown = Form.Preset,
+    DropDownDefault = PresetName.Intensity,
     Cancel = true
 }
+
 PresetType = InputDropDown(InputSettings)
 
 -- If not PresetType defined, exit
 if Cancelled(PresetType) then
     goto EXIT
 else
-    if PresetType == PresetName.PanTilt then
-        Settings.Type = "Pan/Tilt"
-    elseif
-        PresetType == PresetName.Color or
-        PresetType == PresetName.Intensity or
-        PresetType == PresetName.Gobo or
-        PresetType == PresetName.Beam or
-        PresetType == PresetName.BeamFX or
-        PresetType == PresetName.Framing
-    then
+    if PresetName[PresetType] then
         Settings.Type = PresetType
     else
         LogInformation(Content.StopMessage)
@@ -449,6 +487,9 @@ else
     end
     LogInformation("Preset Type: " .. PresetType .. "\r\n\t" .. "Delete " .. PresetType .. " presets")
 end
+
+--# REQUEST the Preset Range # --
+---------------------------------
 
 -- Request the Start Preset ID n°
 InputSettings = {
@@ -458,30 +499,42 @@ InputSettings = {
     DefaultButton = Word.Ok,
     Cancel = true
 }
-Settings.PTStart = InputNumber(InputSettings)
-if Cancelled(Settings.PTStart) then
+
+Settings.PresetIDStart = InputNumber(InputSettings)
+
+if Cancelled(Settings.PresetIDStart) then
     goto EXIT
 end
+
 -- Request the Last Preset ID n°
 InputSettings.Question = Content.To.Question
 InputSettings.Description = Content.To.Description
-InputSettings.CurrentValue = Settings.PTStart + 1
-Settings.PTEnd = InputNumber(InputSettings)
-if Cancelled(Settings.PTEnd) then
+InputSettings.CurrentValue = Settings.PresetIDStart + 1
+
+Settings.PresetIDEnd = InputNumber(InputSettings)
+
+if Cancelled(Settings.PresetIDEnd) then
     goto EXIT
 end
 
-LogActivity(Content.Options)
-LogActivity("\r\n\t" .. "- Delete " .. PresetType .. " Presets, from n°" .. Settings.PTStart .." to n°" .. Settings.PTEnd )
+--# LOG all user choice # --
+----------------------------
 
--- Get all preset name
+-- RESUME of action to be performed
+LogActivity(Content.Options)
+LogActivity("\r\n\t" .. "- Delete " .. PresetType .. " Presets, from n°" .. Settings.PresetIDStart .." to n°" .. Settings.PresetIDEnd )
+
+-- DETAIL of impacted presets
 LogActivity("\r\n" .. Content.PresetList)
 
-Presets = ListPreset(PresetType, Settings.PTStart, Settings.PTEnd)
+Presets = ListPreset(PresetType, Settings.PresetIDStart, Settings.PresetIDEnd)
 
 for i, Preset in pairs(Presets) do
     LogActivity("\r\n\t" .. '- n°' .. Preset.id .. ' ' .. Preset.name)
 end
+
+--# USER Validation # --
+------------------------
 
 InputValidationSettings = {
     Question = Content.Validation.Question,
@@ -489,13 +542,20 @@ InputValidationSettings = {
     Buttons = Form.YesNo,
     DefaultButton = Word.Yes
 }
+
 Settings.Validation = InputYesNo(InputValidationSettings)
 
+--------------------------
+--      Execution       --
+--------------------------
+
 if Settings.Validation then
-    for CuelistNumber = Settings.PTStart, Settings.PTEnd do
-        DeletePreset(PresetType, CuelistNumber)
+    -- Iterate through the Preset list
+    for PresetID = Settings.PresetIDStart, Settings.PresetIDEnd do
+        DeletePreset(PresetType, PresetID)
         Sleep(Settings.WaitTime)
     end
+    -- Display a end pop-up
     FootPrint(Content.Done)
 else
     Cancelled()

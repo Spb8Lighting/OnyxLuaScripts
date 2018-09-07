@@ -44,10 +44,6 @@ Content = {
     StopMessage = "Stopped!" .. "\r\n\t" .. "The Preset type defined in the script configuration is not supported",
     Done = "Deletion Ended!",
     Options = "Delete Options:",
-    Groups = {
-        Options = "Groups Options:",
-        List = "Group list:"
-    }
     Presets = {
         Options = "Presets Options:",
         List = "Preset list:"
@@ -57,6 +53,8 @@ Content = {
         Description = "Please select the preset type to create playback from the list:"
     },
     Groups = {
+        Options = "Groups Options:",
+        List = "Group list:",
         Question = "How many fixture groups will be used?",
         Description = "Please indicate the quantity of groups where to create playbacks:"
     },
@@ -201,8 +199,8 @@ Settings.Groups = {}
 -- Request EU details for each group
 for i = 1, Settings.NbOfGroups, 1 do
     -- Request the Group ID
-    InputSettings.Question = "Group n°" .. i .. " ID",
-    InputSettings.Description = "Please indicate the Group n°" .. i .. " ID:",
+    InputSettings.Question = "Group n°" .. i .. " ID"
+    InputSettings.Description = "Please indicate the Group n°" .. i .. " ID:"
 
     local GroupID = InputNumber(InputSettings)
 
@@ -239,12 +237,16 @@ if Cancelled(Settings.PresetIDEnd) then
     goto EXIT
 end
 
+-- Compute the number of Presets
+Settings.NumberOfPreset = Settings.PresetIDEnd - Settings.PresetIDStart + 1
+
 --# REQUEST the Playback Informations # --
 ------------------------------------------
 
 -- Starting playback button page
 InputSettings.Question = Content.Playback.Page.Question
 InputSettings.Description = Content.Playback.Page.Description
+InputSettings.CurrentValue = 1
 
 Settings.PlaybackButtonPage = InputNumber(InputSettings)
 
@@ -278,7 +280,7 @@ Settings.TextOrientation = InputDropDown(InputSettings)
 -- Playback Grid Width
 InputSettings.Question = Content.Playback.Grid.Question
 InputSettings.Description = Content.Playback.Grid.Description
-InputSettings.CurrentValue = Settings.NbOfGroups
+InputSettings.CurrentValue = Settings.NumberOfPreset
 
 Settings.PlaybackWidth = InputNumber(InputSettings)
 
@@ -292,6 +294,7 @@ end
 
 InputSettings.Question = Content.Cue.Time.Question
 InputSettings.Description = Content.Cue.Time.Description
+InputSettings.CurrentValue = 0
 
 Settings.TimeFade = InputFloatNumber(InputSettings)
 
@@ -304,6 +307,7 @@ end
 
 InputSettings.Question = Content.Cuelist.Time.Question
 InputSettings.Description = Content.Cuelist.Time.Description
+InputSettings.CurrentValue = 0
 
 Settings.TimeRelease = InputFloatNumber(InputSettings)
 
@@ -331,14 +335,13 @@ LogActivity("\r\n\t" .. "- " .. PresetType .. " Presets, from n°" .. Settings.P
 -- DETAIL of PRESETS
 LogActivity("\r\n" .. Content.Presets.List)
 
-Presets = ListPreset(PresetType, Settings.PresetIDStart, Settings.PresetIDEnd)
+Settings.Presets = ListPreset(PresetType, Settings.PresetIDStart, Settings.PresetIDEnd)
 
-for i, Preset in pairs(Presets) do
+for i, Preset in pairs(Settings.Presets) do
     LogActivity("\r\n\t" .. "- n°" .. Preset.id .. " " .. Preset.name)
 end
 
 -- RESUME of PLAYBACK
-Settings.NumberOfPreset = Settings.PresetIDEnd - Settings.PresetIDStart + 1
 Settings.GridSize = Settings.NbOfGroups .. " groups of " .. Settings.NumberOfPreset .. " presets"
 
 LogActivity("\r\n" .. Content.Playback.Options)
@@ -379,10 +382,10 @@ Counter = {
 ::START::
 
 if Settings.Validation then
-    Onyx.Key("Record") -- Trick to avoid first empty playback button, don't know why it happens ...
-    for i, Group in pairs(Groups) do
+    Onyx.Key_ButtonClick("Record") -- Trick to avoid first empty playback button, don't know why it happens ...
+    for i, Group in pairs(Settings.Groups) do
         --¨For each preset
-        for i, Preset in pairs(Presets) do
+        for i, Preset in pairs(Settings.Presets) do
             Onyx.ClearProgrammer()
             if Settings.Step == 1 then
                 Sleep(Settings.WaitTime)
@@ -400,23 +403,23 @@ if Settings.Validation then
                     Onyx.SelectBeamPreset(Preset.id)
                 end
                 Sleep(Settings.WaitTime)
-                Onyx.RecordCuelist(Counter.Cuelist)
+                RecordCuelist(Counter.Cuelist)
                 Sleep(Settings.WaitTime)
-                Onyx.CopyCuelistFromDirectoryToPlaybackButton(
+                Onyx.CopyCuelistToPlaybackButton(
                     Counter.Cuelist,
                     Settings.PlaybackButtonPage,
                     Counter.PlaybackNumber
                 )
                 Sleep(Settings.WaitTime)
-                Onyx.SetSelectedCuelistName(CuelistName(Group.name, Preset.name, false))
+                Onyx.RenameCuelist(CuelistName(Group.name, Preset.name, false))
                 if Settings.RenameCue == true then
                     Sleep(Settings.WaitTime)
                     Onyx.RenameCue(1, CuelistName(Group.name, Preset.name, false))
                 end
                 SleepOption()
-                Onyx.SetCueTimeFade(1, Settings.TimeFade)
+                Onyx.SetCueFadeTime(1, Settings.TimeFade)
                 SleepOption()
-                Onyx.SetCuelistTimeRelease(Counter.Cuelist, Settings.TimeRelease)
+                Onyx.SetCuelistReleaseTime(Counter.Cuelist, Settings.TimeRelease)
             elseif Settings.Step == 2 then
                 Onyx.SelectCuelist(Counter.Cuelist)
                 Onyx.SetCuelistAppearance(Counter.Cuelist, Preset.appearance) -- Apply the preset appearance to the cuelist
