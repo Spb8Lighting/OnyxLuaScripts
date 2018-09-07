@@ -250,16 +250,16 @@ function CopyCue(CuelistIDSource, CueID, CuelistIDTarget)
 	Sleep(Settings.WaitTime)
 	Onyx.SelectCuelist(CuelistIDSource)
 	Sleep(Settings.WaitTime)
-	Onyx.Key_ButtonPress("Copy")
+	Onyx.Key_ButtonClick("Copy")
 	Sleep(Settings.WaitTime)
-	Onyx.Key_ButtonPress("Cue")
+	Onyx.Key_ButtonClick("Cue")
 	Sleep(Settings.WaitTime)
 	KeyNumber(CueID)
-	Onyx.Key_ButtonPress("At")
+	Onyx.Key_ButtonClick("At")
 	Sleep(Settings.WaitTime)
 	Onyx.SelectCuelist(CuelistIDTarget)
 	Sleep(Settings.WaitTime)
-	Onyx.Key_ButtonPress("Enter")
+	Onyx.Key_ButtonClick("Enter")
 	Sleep(Settings.WaitTime)
 end
 
@@ -267,22 +267,22 @@ function KeyNumber(Number)
 	if string.find(Number, "%d", 1, false) then
 		a = string.match(Number, "(.+)")
 		for c in a:gmatch "." do
-			Onyx.Key_ButtonPress("Num" .. c)
+			Onyx.Key_ButtonClick("Num" .. c)
 		end
 		Sleep(Settings.WaitTime)
 	end
 end
 
 function RecordCuelist(CuelistID)
-	Onyx.Key_ButtonPress("Record")
+	Onyx.Key_ButtonClick("Record")
 	Sleep(Settings.WaitTime)
-	Onyx.Key_ButtonPress("Slash")
+	Onyx.Key_ButtonClick("Slash")
 	Sleep(Settings.WaitTime)
-	Onyx.Key_ButtonPress("Slash")
+	Onyx.Key_ButtonClick("Slash")
 	KeyNumber(CuelistID)
-	Onyx.Key_ButtonPress("Enter")
+	Onyx.Key_ButtonClick("Enter")
 	Sleep(Settings.WaitTime)
-	Onyx.Key_ButtonPress("Enter")
+	Onyx.Key_ButtonClick("Enter")
 	return true
 end
 
