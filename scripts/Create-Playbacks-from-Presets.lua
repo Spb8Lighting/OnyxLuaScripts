@@ -11,6 +11,8 @@
 ---------------
 -- Changelog --
 ---------------
+-- 30-10-2018 - 1.1: Fix a bug when the grid width is smaller than the number of cuelist to be created
+--                  + Fix the historical issue with the first cuelist creation which fails randomly
 -- 07-09-2018 - 1.0: Creation
 
 -------------------
@@ -26,7 +28,7 @@ Settings = {
 }
 
 ScriptInfos = {
-    version = "1.0",
+    version = "1.1",
     name = "CreatePlaybacksFromPresets"
 }
 
@@ -382,9 +384,16 @@ Counter = {
 ::START::
 
 if Settings.Validation then
-    Onyx.Key_ButtonClick("Record") -- Trick to avoid first empty playback button, don't know why it happens ...
+    Onyx.ClearProgrammer()
+    if Settings.Step == 1 then
+        --Workaround the first empty playback
+        RecordCuelist(Counter.Cuelist)
+            Sleep(Settings.WaitTime)
+        Onyx.DeleteCuelist(Counter.Cuelist)
+            Sleep(Settings.WaitTime)
+    end
     for i, Group in pairs(Settings.Groups) do
-        --¨For each preset
+        --For each preset
         for i, Preset in pairs(Settings.Presets) do
             Onyx.ClearProgrammer()
             if Settings.Step == 1 then
@@ -434,6 +443,9 @@ if Settings.Validation then
         if Settings.Orientation == true then -- Vertical Orientation
             Counter.PlaybackNumber = Settings.PlaybackButtonStart + i
         else -- Horizontal Orientation
+            if i == 1 and Counter.PlaybackNumber > Settings.PlaybackWidth then
+                Settings.PlaybackWidth = Settings.PlaybackWidth * math.ceil(Counter.PlaybackNumber / Settings.PlaybackWidth)
+            end
             Counter.PlaybackNumber = Settings.PlaybackButtonStart + (Settings.PlaybackWidth * i)
         end
     end
