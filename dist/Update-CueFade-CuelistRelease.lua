@@ -11,6 +11,8 @@
 ---------------
 -- Changelog --
 ---------------
+-- 08-11-2018 - 1.3: Fix a mispelling on the "To Cuelist ID" sentence
+--									+ The last cuelist ID number input request is now fill per default with start cuelist ID + 1
 -- 07-09-2018 - 1.2: Add some block of comment for clearer code reading
 --                  + Rename some variables for clearer code reading
 -- 07-09-2018 - 1.1: Fix issue with time value of 0 which was cancelling the script
@@ -25,7 +27,7 @@ Settings = {
 }
 
 ScriptInfos = {
-	version = "1.2",
+	version = "1.3",
 	name = "UpdateCueFadeCuelistRelease"
 }
 
@@ -34,6 +36,8 @@ ScriptInfos = {
 ---------------
 -- Changelog --
 ---------------
+-- 08-11-2018 - 1.3: New InputText() function
+--							+	New replace() function
 -- 07-09-2018 - 1.2: Fix input number max issue
 --              + add Word.Script.Cancel text value
 --              + add Form.Preset list values
@@ -244,6 +248,17 @@ function InputFloatNumber(Infos)
 	return ShowInput(Prompt, Infos)
 end
 
+function InputText(Infos)
+	-- Get the IntegerInput Prompt with default settings
+	Prompt = Input(Infos, "TextInput")
+	-- Prompt settings
+	if Infos.CurrentValue then
+		Prompt.SetDefaultValue(Infos.CurrentValue)
+	end
+
+	return ShowInput(Prompt, Infos)
+end
+
 function ShowInput(Prompt, Infos)
 	-- Display the prompt
 	Answer = Prompt.Show()
@@ -272,6 +287,12 @@ end
 --------------------
 --   Functions    --
 --------------------
+
+function replace(str, what, with)
+    what = string.gsub(what, "[%(%)%.%+%-%*%?%[%]%^%$%%]", "%%%1")
+    with = string.gsub(with, "[%%]", "%%%%")
+    return string.gsub(str, what, with)
+end
 
 function trim(s)
 	return (s:gsub("^%s*(.-)%s*$", "%1"))
@@ -441,7 +462,7 @@ Content = {
 		},
 		To = {
 			Question = "To Cuelist n°",
-			Description = "Indicate the first Cuelist ID number where to update the release time (and its cue(s) fade time)"
+			Description = "Indicate the last Cuelist ID number where to update the release time (and its cue(s) fade time)"
 		},
 		Time = {
 			Question = "Cuelist Release Time:",
@@ -494,6 +515,7 @@ end
 -- Request the Last Cuelist ID n°
 InputSettings.Question = Content.Cuelist.To.Question
 InputSettings.Description = Content.Cuelist.To.Description
+InputSettings.CurrentValue = Settings.CuelistIDStart + 1
 
 Settings.CuelistIDEnd = InputNumber(InputSettings)
 
@@ -506,6 +528,7 @@ end
 
 InputSettings.Question = Content.Cuelist.Time.Question
 InputSettings.Description = Content.Cuelist.Time.Description
+InputSettings.CurrentValue = 0
 
 Settings.TimeRelease = InputFloatNumber(InputSettings)
 
@@ -519,6 +542,7 @@ end
 -- Request the start Cue ID n°
 InputSettings.Question = Content.Cue.From.Question
 InputSettings.Description = Content.Cue.From.Description
+InputSettings.CurrentValue = 1
 
 Settings.CueIDStart = InputNumber(InputSettings)
 if Cancelled(Settings.CueIDStart) then
@@ -528,6 +552,7 @@ end
 -- Request the Last Cue ID n°
 InputSettings.Question = Content.Cue.To.Question
 InputSettings.Description = Content.Cue.To.Description
+InputSettings.CurrentValue = Settings.CueIDStart
 
 Settings.CueIDEnd = InputNumber(InputSettings)
 if Cancelled(Settings.CueIDEnd) then
@@ -539,6 +564,7 @@ end
 
 InputSettings.Question = Content.Cue.Time.Question
 InputSettings.Description = Content.Cue.Time.Description
+InputSettings.CurrentValue = 0
 
 Settings.TimeFade = InputFloatNumber(InputSettings)
 
