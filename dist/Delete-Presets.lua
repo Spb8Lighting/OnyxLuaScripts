@@ -37,6 +37,8 @@ ScriptInfos = {
 ---------------
 -- Changelog --
 ---------------
+-- 08-11-2018 - 1.3: New InputText() function
+--							+	New replace() function
 -- 07-09-2018 - 1.2: Fix input number max issue
 --              + add Word.Script.Cancel text value
 --              + add Form.Preset list values
@@ -247,6 +249,17 @@ function InputFloatNumber(Infos)
 	return ShowInput(Prompt, Infos)
 end
 
+function InputText(Infos)
+	-- Get the IntegerInput Prompt with default settings
+	Prompt = Input(Infos, "TextInput")
+	-- Prompt settings
+	if Infos.CurrentValue then
+		Prompt.SetDefaultValue(Infos.CurrentValue)
+	end
+
+	return ShowInput(Prompt, Infos)
+end
+
 function ShowInput(Prompt, Infos)
 	-- Display the prompt
 	Answer = Prompt.Show()
@@ -275,6 +288,12 @@ end
 --------------------
 --   Functions    --
 --------------------
+
+function replace(str, what, with)
+    what = string.gsub(what, "[%(%)%.%+%-%*%?%[%]%^%$%%]", "%%%1")
+    with = string.gsub(with, "[%%]", "%%%%")
+    return string.gsub(str, what, with)
+end
 
 function trim(s)
 	return (s:gsub("^%s*(.-)%s*$", "%1"))
