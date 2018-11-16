@@ -8,6 +8,7 @@ const gulp = require('gulp')
 gulp.task('build', () => {
 	return gulp.src('./scripts/*.lua')
 		.pipe(replace('--##LUAHEADERINCLUDE##--', fs.readFileSync('./assets/header.lua', 'utf8') + "\n"))
+		.pipe(replace('--##LUAPRESETSINCLUDE##--', fs.readFileSync('./assets/Auto-Presets.lua', 'utf8') + "\n"))
 		.pipe(gulp.dest('./dist/'))
 })
 
