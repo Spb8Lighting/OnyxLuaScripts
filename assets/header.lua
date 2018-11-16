@@ -3,6 +3,7 @@
 ---------------
 -- Changelog --
 ---------------
+-- 16-11-2018 - 1.4: InputNumber() function now accept MinValue as Infos to SetMinValue (default stays 1)
 -- 08-11-2018 - 1.3: New InputText() function
 --							+	New replace() function
 -- 07-09-2018 - 1.2: Fix input number max issue
@@ -24,7 +25,7 @@ if Settings.WaitTime == nil or Settings.WaitTime == "" then
 end
 
 PresetName = {
-    Intensity = "Intensity",
+  Intensity = "Intensity",
 	PanTilt = "PanTilt",
 	Color = "Color",
 	Gobo = "Gobo",
@@ -65,7 +66,7 @@ DefaultAppearance = {
 	Intensity = Appearance.White,
 	PanTilt = Appearance.Red,
 	Color = Appearance.White,
-    Gobo = Appearance.Green,
+  Gobo = Appearance.Green,
 	Beam = Appearance.Yellow,
 	BeamFX = Appearance.Cyan,
 	Framing = Appearance.Magenta
@@ -78,9 +79,9 @@ BPMTiming = {
 }
 
 Word = {
-    Script = {
-        Cancel = "Script has been cancelled! Nothing performed."
-    },
+	Script = {
+			Cancel = "Script has been cancelled! Nothing performed."
+	},
 	Ok = "Ok",
 	Cancel = "Cancel",
 	Reset = "Reset",
@@ -102,15 +103,15 @@ Form = {
 		Word.Yes,
 		Word.No
     },
-    Preset = {
-        PresetName.Intensity,
-        PresetName.PanTilt,
-        PresetName.Color,
-        PresetName.Gobo,
-        PresetName.Beam,
-        PresetName.BeamFX,
-        PresetName.Framing
-    }
+	Preset = {
+		PresetName.Intensity,
+		PresetName.PanTilt,
+		PresetName.Color,
+		PresetName.Gobo,
+		PresetName.Beam,
+		PresetName.BeamFX,
+		PresetName.Framing
+	}
 }
 
 -- Get Onyx Software object
@@ -194,7 +195,11 @@ function InputNumber(Infos)
 	-- Get the IntegerInput Prompt with default settings
 	Prompt = Input(Infos, "IntegerInput")
 	-- Prompt settings
-	Prompt.SetMinValue(1)
+	if Infos.MinValue then
+		Prompt.SetMinValue(Infos.MinValue)
+	else
+		Prompt.SetMinValue(1)
+	end
 	Prompt.SetMaxValue(10000)
 	if Infos.CurrentValue then
 		Prompt.SetDefaultValue(Infos.CurrentValue)
