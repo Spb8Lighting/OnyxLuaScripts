@@ -4,6 +4,7 @@ This repository contains some LUA script which can be run from ShowCockpit to in
 
 ## Script List
 
+<!---* [Onyx-Delete-Groups.lua](https://github.com/Spb8Lighting/OnyxLuaScripts/blob/master/dist/Onyx-Delete-Groups.lua) - This script allows to delete a range of group (batch mode) -->
 * [Onyx-Delete-Cuelists.lua](https://github.com/Spb8Lighting/OnyxLuaScripts/blob/master/dist/Onyx-Delete-Cuelists.lua) - This script allows to delete a range of cuelist (batch mode)
 * [Onyx-Delete-Presets.lua](https://github.com/Spb8Lighting/OnyxLuaScripts/blob/master/dist/Onyx-Delete-Presets.lua) - This script allows to delete a range of presets (batch mode)
 * [Onyx-Update-CueFade-CuelistRelease.lua](https://github.com/Spb8Lighting/OnyxLuaScripts/blob/master/dist/Onyx-Update-CueFade-CuelistRelease.lua) - This script allows to update the cues fade times in the meantime of the cuelist release time
@@ -103,6 +104,11 @@ Inside the [header.lua](https://github.com/Spb8Lighting/OnyxLuaScripts/blob/mast
     <p>This function will return an array of JSON object {id,name} with all Cuelist name from ID CuelistIDStart to ID CuelistIDEnd</p>
 </details>
 <details>
+    <summary>ListGroup(GroupIDStart, GroupIDEnd)</summary>
+    <p>Arguments: int GroupIDStart, int GroupIDEnd</p>
+    <p>This function will return an array of JSON object {id,name} with all Group name from ID GroupIDStart to ID GroupIDEnd</p>
+</details>
+<details>
     <summary>DeletePreset(PresetType, PresetID)</summary>
     <p>Arguments: string PresetType [Intensity|PanTilt|Color|Gobo|Beam|BeamFX|Framing], int PresetID</p>
     <p>This function will delete the Preset of PresetType with ID PresetID</p>
@@ -125,6 +131,12 @@ Inside the [header.lua](https://github.com/Spb8Lighting/OnyxLuaScripts/blob/mast
     <p>Dependency: KeyNumber()</p>
     <p>This function will record a new cuelist (of the latest recorded cuelist type) with ID CuelistID</p>
 </details>
+<!---<details>
+    <summary>DeleteGroup(GroupID)</summary>
+    <p>Arguments: int GroupID</p>
+    <p>Dependency: KeyNumber()</p>
+    <p>This function will delete a group with ID GroupID</p>
+</details>-->
 <details>
     <summary>KeyNumber(Number)</summary>
     <p>Arguments: int number</p>
