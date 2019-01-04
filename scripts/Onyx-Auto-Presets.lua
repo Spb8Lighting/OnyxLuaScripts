@@ -11,6 +11,7 @@
 ---------------
 -- Changelog --
 ---------------
+-- 04-01-2019 - 0.0.0.1: Preset creation works, not the populate part
 -- 06-12-2018 - 0.0.0.0.0.1: Initialisation, not working yet
 -- 16-11-2018 - 0.0.0.0.0.0.1: Initialisation, not working yet
 
@@ -27,7 +28,7 @@ Settings = {
 }
 
 ScriptInfos = {
-	version = "0.0.0.0.0.1",
+	version = "0.0.0.1",
 	name = "AutoPresets"
 }
 
@@ -101,6 +102,8 @@ Content = {
 --------------------------
 -- Collect Informations --
 --------------------------
+
+InputSettings = {}
 
 --# REQUEST the Preset Grid Width # --
 --------------------------------
@@ -207,97 +210,99 @@ end
 
 --# REQUEST the Fixtures Group # --
 -----------------------------------
-
-if Settings.Groups == nil then
-  ::GROUPS::
-  -- Request EU number of groups to be threated
-  InputSettings = false
-  InputSettings = {
-    Question = Content.Groups.Question,
-    Description = Content.Groups.Description,
-    Buttons = Form.OkCancel,
-    DefaultButton = Word.Ok,
-    Cancel = true
-  }
-
-  Settings.NbOfGroups = InputNumber(InputSettings)
-
-  if Cancelled(Settings.NbOfGroups) then
-    goto EXIT
-  end
-
-  -- Indicate the number of Groups to be threated
-  Settings.Groups = {}
-
-  -- Preset Resolution to get
-  PresetsResolution = {PresetName.Intensity, PresetName.Color}
-
-  -- Request EU details for each group
-  for i = 1, Settings.NbOfGroups, 1 do
-    -- Request the Group ID
-    InputSettings.Question = replace(Content.GroupID.Question, Rep, i),
-    InputSettings.Description = replace(Content.GroupID.Description, Rep, i)
-
-    local Group = {}
-    Group.Resolution = {}
-    Group.ID = InputNumber(InputSettings)
-
-    if Cancelled(GroupID) then
-        goto EXIT
-    end
-
-    -- Get the Group Name
-    Group.Name = Onyx.GetGroupName(Group.ID)
-
-    -- Request EU details for each PRESET TYPE resolution
+::GROUPS::
+-- Request Fixtures Group setting when Populate preset Only
+if Settings.Action == Content.Action.Populate then
+  if Settings.Groups == nil then
+    -- Request EU number of groups to be threated
     InputSettings = false
     InputSettings = {
+      Question = Content.Groups.Question,
+      Description = Content.Groups.Description,
       Buttons = Form.OkCancel,
       DefaultButton = Word.Ok,
-      DropDown = {Content.Resolution.Standard, Content.Resolution.Fine},
-      DropDownDefault = Content.Resolution.Standard,
       Cancel = true
     }
-    for idPreset, LocalPreset in pairs(PresetsResolution) do
-      ReplaceRepID = "n°" .. i .. " ID: " .. Group.ID .. " Name: " .. Group.Name
-      InputSettings.Question = replace(replace(Content.Resolution.Question, Rep, LocalPreset), RepID, ReplaceRepID),
-      InputSettings.Description = replace(replace(Content.Resolution.Description, Rep, LocalPreset), ReplaceRepID)
 
-      Group.Resolution[LocalPreset] = InputDropDown(InputSettings)
+    Settings.NbOfGroups = InputNumber(InputSettings)
 
-        -- If not PresetType defined, exit
-      if Cancelled(Group[LocalPreset]) then
-        goto EXIT
-      end
+    if Cancelled(Settings.NbOfGroups) then
+      goto EXIT
     end
-    -- Inset into the global Groups table
-    table.insert(Settings.Groups, Group)
 
+    -- Indicate the number of Groups to be threated
+    Settings.Groups = {}
+
+    -- Preset Resolution to get
+    PresetsResolution = {PresetName.Intensity, PresetName.Color}
+
+    -- Request EU details for each group
+    for i = 1, Settings.NbOfGroups, 1 do
+      -- Request the Group ID
+      InputSettings.Question = replace(Content.GroupID.Question, Rep, i)
+      InputSettings.Description = replace(Content.GroupID.Description, Rep, i)
+
+      local Group = {}
+      Group.Resolution = {}
+      Group.ID = InputNumber(InputSettings)
+
+      if Cancelled(Group.ID) then
+          goto EXIT
+      end
+
+      -- Get the Group Name
+      Group.Name = CheckEmpty(Onyx.GetGroupName(Group.ID))
+
+      -- Request EU details for each PRESET TYPE resolution
+      InputSettings = false
+      InputSettings = {
+        Buttons = Form.OkCancel,
+        DefaultButton = Word.Ok,
+        DropDown = {Content.Resolution.Standard, Content.Resolution.Fine},
+        DropDownDefault = Content.Resolution.Standard,
+        Cancel = true
+      }
+      for idPreset, LocalPreset in pairs(PresetsResolution) do
+        ReplaceRepID = "n°" .. i .. " ID: " .. Group.ID .. " Name: " .. Group.Name
+        InputSettings.Question = replace(replace(Content.Resolution.Question, Rep, LocalPreset), RepID, ReplaceRepID)
+        InputSettings.Description = replace(replace(Content.Resolution.Description, Rep, LocalPreset), RepID, ReplaceRepID)
+
+        Group.Resolution[LocalPreset] = InputDropDown(InputSettings)
+
+          -- If not PresetType defined, exit
+        if Cancelled(Group.Resolution[LocalPreset]) then
+          goto EXIT
+        end
+      end
+      -- Inset into the global Groups table
+      table.insert(Settings.Groups, Group)
+    end
     -- RESUME of GROUPS
-    LogActivity(Content.Groups.Options)
+    LogActivity("\r\n" .. Content.Groups.Options)
     LogActivity("\r\n\t" .. "- " .. Settings.NbOfGroups .. " group(s)")
 
     -- DETAIL of GROUPS
     LogActivity("\r\n" .. Content.Groups.List)
     for i, Group in pairs(Settings.Groups) do
-        LogActivity("\r\n\t" .. "- n°" .. Group.id .. " - " .. Group.name)
+        LogActivity("\r\n\t" .. "- n°" .. Group.ID .. " - " .. Group.Name)
         for Key, Value in pairs(Group.Resolution) do
           LogActivity("\r\n\t\t" .. "- " .. Key .. ": " .. Value)
         end
     end
-  end
-else
-  InputSettings = false
-  InputSettings = {
-    Question = Content.Groups.ReuseGroup,
-    Description = Content.Groups.ReuseGroup,
-    Buttons = Form.YesNo,
-    DefaultButton = Word.Yes
-  }
+  else
+    InputSettings = false
+    InputSettings = {
+      Question = Content.Groups.ReuseGroup,
+      Description = Content.Groups.ReuseGroup,
+      Buttons = Form.YesNo,
+      DefaultButton = Word.Yes
+    }
 
-  if InputYesNo(InputValidationSettings) then
-  else 
-    goto GROUPS
+    if InputYesNo(InputValidationSettings) then
+    else
+      Settings.Groups = nil
+      goto GROUPS
+    end
   end
 end
 
@@ -318,16 +323,33 @@ if Settings.Action == Content.Action.Create then
   }
 
   Settings.Validation = InputYesNo(InputValidationSettings)
+  -- RESET Log Messages
+  Messages = {}
 
   if Settings.Validation then
     if Settings.Type == PresetName.Color then
+      -- Define the color preset type following preferences
+      if Settings.Color == Content.Color.Extended then
+        Settings.PresetTyping = 'ColorFull'
+      else
+        Settings.PresetTyping = 'Color'
+      end
+    else
+      -- Define the preset type
+      Settings.PresetTyping = Settings.Type
     end
-
+    -- Create Preset
+    for i, InnerPreset in pairs(PresetsConfiguration[Settings.PresetTyping]) do
+      RecordPreset(Settings.Type, InnerPreset, true)
+      Sleep(Settings.WaitTime)
+    end
     -- Don't exit, purpose to continue for a next action!
     goto START
   end
 -- POPULATE ACTION
 elseif Settings.Action == Content.Action.Populate then
+  -- RESET Log Messages
+  Messages = {}
 
   -- Don't exit, purpose to continue for a next action!
   goto START

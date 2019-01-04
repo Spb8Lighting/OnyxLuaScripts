@@ -11,6 +11,8 @@
 ---------------
 -- Changelog --
 ---------------
+-- 04-01-2019 - 0.0.0.1: Preset creation works, not the populate part
+-- 06-12-2018 - 0.0.0.0.0.1: Initialisation, not working yet
 -- 16-11-2018 - 0.0.0.0.0.0.1: Initialisation, not working yet
 
 -------------------
@@ -26,7 +28,7 @@ Settings = {
 }
 
 ScriptInfos = {
-	version = "0.0.0.0.0.0.1",
+	version = "0.0.0.1",
 	name = "AutoPresets"
 }
 
@@ -35,6 +37,8 @@ ScriptInfos = {
 ---------------
 -- Changelog --
 ---------------
+-- 04-01-2019 - 1.6: RecordPreset() function has been added
+-- 29-12-2018 - 1.5: DeleteGroup() function & ListGroup() has been added
 -- 16-11-2018 - 1.4: InputNumber() function now accept MinValue as Infos to SetMinValue (default stays 1)
 -- 08-11-2018 - 1.3: New InputText() function
 --							+	New replace() function
@@ -329,6 +333,16 @@ function KeyNumber(Number)
 	end
 end
 
+function DeleteGroup(GroupID)
+	Onyx.Key_ButtonClick("Delete")
+	Sleep(Settings.WaitTime)
+	Onyx.Key_ButtonClick("Group")
+	Sleep(Settings.WaitTime)
+	KeyNumber(GroupID)
+	Onyx.Key_ButtonClick("Enter")
+	return true
+end
+
 function RecordCuelist(CuelistID)
 	Onyx.Key_ButtonClick("Record")
 	Sleep(Settings.WaitTime)
@@ -413,6 +427,25 @@ function DeletePreset(PresetType, PresetID)
 	return true
 end
 
+function RecordPreset(PresetType, Preset, Merging)
+	if PresetType == PresetName.PanTilt then
+		Onyx.RecordPanTiltPreset(Preset.Position, Preset.Name, Merging)
+	elseif PresetType == PresetName.Color then
+		Onyx.RecordColorPreset(Preset.Position, Preset.Name, Merging)
+	elseif PresetType == PresetName.Intensity then
+		Onyx.RecordIntensityPreset(Preset.Position, Preset.Name, Merging)
+	elseif PresetType == PresetName.Gobo then
+		Onyx.RecordGoboPreset(Preset.Position, Preset.Name, Merging)
+	elseif PresetType == PresetName.Beam then
+		Onyx.RecordBeamPreset(Preset.Position, Preset.Name, Merging)
+	elseif PresetType == PresetName.BeamFX then
+		Onyx.RecordBeamFXPreset(Preset.Position, Preset.Name, Merging)
+	elseif PresetType == PresetName.Framing then
+		Onyx.RecordFramingPreset(Preset.Position, Preset.Name, Merging)
+	end
+	return true
+end
+
 function ListPreset(PresetType, PresetIDStart, PresetIDEnd)
 	Presets = {}
 	for i = PresetIDStart, PresetIDEnd, 1 do
@@ -442,6 +475,19 @@ function ListCuelist(CuelistIDStart, CuelistIDEnd)
 	return Cuelists
 end
 
+function ListGroup(GroupIDStart, GroupIDEnd)
+	Groups = {}
+	for i = GroupIDStart, GroupIDEnd, 1 do
+		table.insert(
+			Groups,
+			{
+				id = i,
+				name = CheckEmpty(Onyx.GetGroupName(i))
+			}
+		)
+	end
+	return Groups
+end
 HeadPrint()
 -- End of Header --
 
@@ -456,6 +502,7 @@ HeadPrint()
 --------------------------
 
 Rep = "%VAR%"
+RepID = "%GROUPID%"
 
 Content = {
   StopMessage = "Stopped!" .. "\r\n\t" .. "The value defined in the script configuration is not supported",
@@ -464,6 +511,23 @@ Content = {
     Description = "Please select what you want to do:",
     Create = "Create",
     Populate = "Populate"
+  },
+  Groups = {
+    ReuseGroup = "Do you want to keep your previous groups definition?",
+    Options = "Groups Options:",
+    List = "Group list:",
+    Question = "How many fixture groups will be used?",
+    Description = "Please indicate the quantity of groups where to populate presets:"
+  },
+  GroupID = {
+    Question = "What is the Group n°".. Rep .." ID?",
+    Description = "Please indicate the Group n°".. Rep .." ID:"
+  },
+  Resolution = {
+    Question = "[" .. Rep .. "] What is the " .. Rep .. " resolution for the group ".. RepID .."?",
+    Description = "[" .. Rep .. "] Please select the " .. Rep .. " resolution for the group ".. RepID ..":",
+    Standard = "8bits (standard)",
+    Fine = "16Bits (fine)"
   },
   Create = {
     Question = "Which type of preset do you want to " .. Rep .. "?",
@@ -498,6 +562,8 @@ Content = {
 -- Collect Informations --
 --------------------------
 
+InputSettings = {}
+
 --# REQUEST the Preset Grid Width # --
 --------------------------------
 
@@ -517,122 +583,123 @@ end
 
 PresetsConfiguration = {
   Intensity = {
-    {name = "Dimmer 100%", 		    color = "255, 255, 255",		value=255, 		          position = Settings.PresetINTENSITYStartPosition},
-    {name = "Dimmer 50%", 		    color = "160, 160, 160", 		value=127,		          position = Settings.PresetINTENSITYStartPosition+Settings.PresetGridWidth},
-    {name = "Dimmer 0%", 			    color = "96, 96, 96", 			value=0,		            position = Settings.PresetINTENSITYStartPosition+Settings.PresetGridWidth*2},
+    {Name = "Dimmer 100%", 		    Color = "255, 255, 255",		Value=255, 		          Position = Settings.PresetINTENSITYStartPosition},
+    {Name = "Dimmer 50%", 		    Color = "160, 160, 160", 		Value=127,		          Position = Settings.PresetINTENSITYStartPosition+Settings.PresetGridWidth},
+    {Name = "Dimmer 0%", 			    Color = "96, 96, 96", 			Value=0,		            Position = Settings.PresetINTENSITYStartPosition+Settings.PresetGridWidth*2},
     
-    {name = "Strobe Fast", 		    color = "255, 255, 0", 			value=nil,	          	position = Settings.PresetINTENSITYStartPosition+1},
-    {name = "Strobe Mid", 		    color = "255, 255, 128", 		value=nil,	          	position = Settings.PresetINTENSITYStartPosition+Settings.PresetGridWidth+1},
-    {name = "Strobe Low", 		    color = "255, 255, 204", 		value=nil,	          	position = Settings.PresetINTENSITYStartPosition+Settings.PresetGridWidth*2+1},
+    {Name = "Strobe Fast", 		    Color = "255, 255, 0", 			Value=nil,	          	Position = Settings.PresetINTENSITYStartPosition+1},
+    {Name = "Strobe Mid", 		    Color = "255, 255, 128", 		Value=nil,	          	Position = Settings.PresetINTENSITYStartPosition+Settings.PresetGridWidth+1},
+    {Name = "Strobe Low", 		    Color = "255, 255, 204", 		Value=nil,	          	Position = Settings.PresetINTENSITYStartPosition+Settings.PresetGridWidth*2+1},
     
-    {name = "Shutter Open", 	    color = "255, 255, 255", 		value=nil,		          position = Settings.PresetINTENSITYStartPosition+2},
-    {name = "Shutter Closed",     color = "0, 0, 0", 				  value=nil,		          position = Settings.PresetINTENSITYStartPosition+Settings.PresetGridWidth+2}
+    {Name = "Shutter Open", 	    Color = "255, 255, 255", 		Value=nil,		          Position = Settings.PresetINTENSITYStartPosition+2},
+    {Name = "Shutter Closed",     Color = "0, 0, 0", 				  Value=nil,		          Position = Settings.PresetINTENSITYStartPosition+Settings.PresetGridWidth+2}
   },
   Gobo = {
-		{name = "No Gobo",	 			    color = "0, 0, 0", 			  	value=nil,		          position = Settings.PresetGOBOStartPosition},
-		{name = "Gobo Rot CW Slow", 	color = "255, 0, 0", 		  	value=nil,		          position = Settings.PresetGOBOStartPosition+Settings.PresetGridWidth},
-		{name = "Gobo Rot CW Fast", 	color = "255, 255, 0", 			value=nil,		          position = Settings.PresetGOBOStartPosition+Settings.PresetGridWidth*2},
-		{name = "Gobo fixed", 			  color = "160, 160, 160", 		value=nil,		          position = Settings.PresetGOBOStartPosition+1},
-		{name = "Gobo Rot CCW Slow", 	color = "0, 0, 255", 		  	value=nil,		          position = Settings.PresetGOBOStartPosition+Settings.PresetGridWidth+1},
-		{name = "Gobo Rot CCW Fast", 	color = "0, 255, 255", 			value=nil,		          position = Settings.PresetGOBOStartPosition+Settings.PresetGridWidth*2+1}
+		{Name = "No Gobo",	 			    Color = "0, 0, 0", 			  	Value=nil,		          Position = Settings.PresetGOBOStartPosition},
+		{Name = "Gobo Rot CW Slow", 	Color = "255, 0, 0", 		  	Value=nil,		          Position = Settings.PresetGOBOStartPosition+Settings.PresetGridWidth},
+		{Name = "Gobo Rot CW Fast", 	Color = "255, 255, 0", 			Value=nil,		          Position = Settings.PresetGOBOStartPosition+Settings.PresetGridWidth*2},
+		{Name = "Gobo fixed", 			  Color = "160, 160, 160", 		Value=nil,		          Position = Settings.PresetGOBOStartPosition+1},
+		{Name = "Gobo Rot CCW Slow", 	Color = "0, 0, 255", 		  	Value=nil,		          Position = Settings.PresetGOBOStartPosition+Settings.PresetGridWidth+1},
+		{Name = "Gobo Rot CCW Fast", 	Color = "0, 255, 255", 			Value=nil,		          Position = Settings.PresetGOBOStartPosition+Settings.PresetGridWidth*2+1}
 	},
 	Beam = {
-		{name = "No prism", 			    color = "0, 0, 0", 			  	value=nil,			        position = Settings.PresetBEAMStartPosition},
-		{name = "Prism Rot CW Slow", 	color = "255, 0, 0", 			  value=nil,			        position = Settings.PresetBEAMStartPosition+Settings.PresetGridWidth},
-		{name = "Prism Rot CW Fast", 	color = "255, 255, 0", 			value=nil,			        position = Settings.PresetBEAMStartPosition+Settings.PresetGridWidth*2},
-		{name = "Prism fixed", 			  color = "160, 160, 160", 		value=nil,			        position = Settings.PresetBEAMStartPosition+1},
-		{name = "Prism Rot CCW Slow", color = "0, 0, 255", 			  value=nil,			        position = Settings.PresetBEAMStartPosition+Settings.PresetGridWidth+1},
-		{name = "Prism Rot CCW Fast", color = "0, 255, 255", 			value=nil,			        position = Settings.PresetBEAMStartPosition+Settings.PresetGridWidth*2+1},
+		{Name = "No prism", 			    Color = "0, 0, 0", 			  	Value=nil,			        Position = Settings.PresetBEAMStartPosition},
+		{Name = "Prism Rot CW Slow", 	Color = "255, 0, 0", 			  Value=nil,			        Position = Settings.PresetBEAMStartPosition+Settings.PresetGridWidth},
+		{Name = "Prism Rot CW Fast", 	Color = "255, 255, 0", 			Value=nil,			        Position = Settings.PresetBEAMStartPosition+Settings.PresetGridWidth*2},
+		{Name = "Prism fixed", 			  Color = "160, 160, 160", 		Value=nil,			        Position = Settings.PresetBEAMStartPosition+1},
+		{Name = "Prism Rot CCW Slow", Color = "0, 0, 255", 			  Value=nil,			        Position = Settings.PresetBEAMStartPosition+Settings.PresetGridWidth+1},
+		{Name = "Prism Rot CCW Fast", Color = "0, 255, 255", 			Value=nil,			        Position = Settings.PresetBEAMStartPosition+Settings.PresetGridWidth*2+1},
 		
-		{name = "Focus Near", 			  color = "0, 0, 0", 				  value={Focus=0},		  	position = Settings.PresetBEAMStartPosition+2},
-		{name = "Focus Middle", 		  color = "160, 160, 160", 		value={Focus=127},			position = Settings.PresetBEAMStartPosition+Settings.PresetGridWidth+2},
-		{name = "Focus Far", 			    color = "255, 0, 0", 			  value={Focus=255},			position = Settings.PresetBEAMStartPosition+Settings.PresetGridWidth*2+2},
+		{Name = "Focus Near", 			  Color = "0, 0, 0", 				  Value={Focus=0},		  	Position = Settings.PresetBEAMStartPosition+2},
+		{Name = "Focus Middle", 		  Color = "160, 160, 160", 		Value={Focus=127},			Position = Settings.PresetBEAMStartPosition+Settings.PresetGridWidth+2},
+		{Name = "Focus Far", 			    Color = "255, 0, 0", 			  Value={Focus=255},			Position = Settings.PresetBEAMStartPosition+Settings.PresetGridWidth*2+2},
 		
-		{name = "Frost 100%", 			  color = "255, 255, 255",		value={Frost=255},			position = Settings.PresetBEAMStartPosition+3},
-		{name = "Frost 50%", 			    color = "160, 160, 160", 		value={Frost=127},			position = Settings.PresetBEAMStartPosition+Settings.PresetGridWidth+3},
-		{name = "Frost 0%", 			    color = "96, 96, 96", 			value={Frost=0},			  position = Settings.PresetBEAMStartPosition+Settings.PresetGridWidth*2+3},
+		{Name = "Frost 100%", 			  Color = "255, 255, 255",		Value={Frost=255},			Position = Settings.PresetBEAMStartPosition+3},
+		{Name = "Frost 50%", 			    Color = "160, 160, 160", 		Value={Frost=127},			Position = Settings.PresetBEAMStartPosition+Settings.PresetGridWidth+3},
+		{Name = "Frost 0%", 			    Color = "96, 96, 96", 			Value={Frost=0},			  Position = Settings.PresetBEAMStartPosition+Settings.PresetGridWidth*2+3},
 		
-		{name = "Zoom 100%", 		    	color = "255, 255, 255",		value={Zoom=255},		    position = Settings.PresetBEAMStartPosition+4},
-		{name = "Zoom 50%", 		    	color = "160, 160, 160", 		value={Zoom=127},		    position = Settings.PresetBEAMStartPosition+Settings.PresetGridWidth+4},
-		{name = "Zoom 0%", 				    color = "96, 96, 96", 			value={Zoom=0},			    position = Settings.PresetBEAMStartPosition+Settings.PresetGridWidth*2+4}
+		{Name = "Zoom 100%", 		    	Color = "255, 255, 255",		Value={Zoom=255},		    Position = Settings.PresetBEAMStartPosition+4},
+		{Name = "Zoom 50%", 		    	Color = "160, 160, 160", 		Value={Zoom=127},		    Position = Settings.PresetBEAMStartPosition+Settings.PresetGridWidth+4},
+		{Name = "Zoom 0%", 				    Color = "96, 96, 96", 			Value={Zoom=0},			    Position = Settings.PresetBEAMStartPosition+Settings.PresetGridWidth*2+4}
   },
   ColorFull = {
-    {name = "CTB", 					      color = "-8071681", 	                              position = Settings.PresetCOLORStartPosition,
-      value={Red=215,		Green=243,		Blue=255,	  White=255,	Amber=0,		UV=0,		  Cyan=40,	Magenta=12,	  Yellow=0}},	
-    {name = "White", 				      color = "-327682", 			                            position = Settings.PresetCOLORStartPosition+1,
-      value={Red=255,		Green=255,		Blue=255,	  White=255,	Amber=0,		UV=0,		  Cyan=0,		Magenta=0,		Yellow=0}},
-    {name = "CTO", 					      color = "-6824", 									                  position = Settings.PresetCOLORStartPosition+2,
-      value={Red=255,		Green=216,		Blue=176,	  White=255,	Amber=255,	UV=0,		  Cyan=0,		Magenta=39,		Yellow=79}},
-    {name = "Salmon", 			      color = "-65536", 									                position = Settings.PresetCOLORStartPosition+3,
-      value={Red=255,		Green=39,		  Blue=28,	  White=25,		Amber=0,		UV=0,		  Cyan=0,		Magenta=216,	Yellow=227}},
-    {name = "Red", 					      color = "-65536", 									                position = Settings.PresetCOLORStartPosition+4,
-      value={Red=255,		Green=0,		  Blue=0,		  White=0,		Amber=0,		UV=0,		  Cyan=0,		Magenta=255,	Yellow=255}},
-    {name = "Peach", 				      color = "-65536", 								                	position = Settings.PresetCOLORStartPosition+5,
-      value={Red=252,		Green=85,		  Blue=37,	  White=0,		Amber=0,		UV=0,		  Cyan=3,		Magenta=170,	Yellow=218}},
-    {name = "Orange", 			      color = "-33280", 									                position = Settings.PresetCOLORStartPosition+6,
-      value={Red=255,		Green=127,		Blue=0,		  White=0,		Amber=0,		UV=0,		  Cyan=0,		Magenta=127,	Yellow=255}},
-    {name = "Yellow", 			      color = "-2560", 									                  position = Settings.PresetCOLORStartPosition+7,
-      value={Red=255,		Green=255,		Blue=0,		  White=0,		Amber=0,		UV=0,		  Cyan=0,		Magenta=0,		Yellow=255}},
-    {name = "Lime", 				      color = "-2560", 									                  position = Settings.PresetCOLORStartPosition+8,
-      value={Red=191,		Green=255,		Blue=0,		  White=0,		Amber=0,		UV=0,		  Cyan=64,	Magenta=0,		Yellow=255}},
-    {name = "Green", 				      color = "-10879232", 								                position = Settings.PresetCOLORStartPosition+9,
-      value={Red=0,		  Green=255,		Blue=0,		  White=0,		Amber=0,		UV=0,		  Cyan=255,	Magenta=0,		Yellow=255}},
-    {name = "Turquoise", 		      color = "-16712449", 								                position = Settings.PresetCOLORStartPosition+10,
-      value={Red=0,		  Green=191,		Blue=127,	  White=0,		Amber=0,		UV=0,		  Cyan=255,	Magenta=64,		Yellow=127}},
-    {name = "Cyan", 			      	color = "-16712449", 							                	position = Settings.PresetCOLORStartPosition+11,
-      value={Red=0,		  Green=255,		Blue=255,	  White=0,		Amber=0,		UV=0,		  Cyan=255,	Magenta=0,		Yellow=0}},
-    {name = "Azure", 				      color = "-16712449", 								                position = Settings.PresetCOLORStartPosition+12,
-      value={Red=0,		  Green=160,		Blue=207,	  White=0,		Amber=0,		UV=0,		  Cyan=255,	Magenta=96,		Yellow=48}},
-    {name = "Light Blue",       	color = "-16769537", 								                position = Settings.PresetCOLORStartPosition+13,
-      value={Red=17,		Green=118,		Blue=255,	  White=0,		Amber=0,		UV=0,		  Cyan=238,	Magenta=137,	Yellow=0}},
-    {name = "Blue", 				      color = "-16769537", 								                position = Settings.PresetCOLORStartPosition+14,
-      value={Red=0,		  Green=0,		  Blue=255,	  White=0,		Amber=0,		UV=0,		  Cyan=255,	Magenta=255,	Yellow=0}},
-    {name = "Dark Blue", 		      color = "-16769537", 								                position = Settings.PresetCOLORStartPosition+15,
-      value={Red=0,		  Green=16,		  Blue=128,	  White=0,		Amber=0,		UV=0,		  Cyan=255,	Magenta=239,	Yellow=127}},
-    {name = "Lavender", 		      color = "-136631233", 								              position = Settings.PresetCOLORStartPosition+16,
-      value={Red=64,		Green=0,		  Blue=128,	  White=0,		Amber=0,		UV=0,		  Cyan=191,	Magenta=255,	Yellow=127}},
-    {name = "Uv", 					      color = "-136631233", 								              position = Settings.PresetCOLORStartPosition+17,
-      value={Red=13,		Green=4,		  Blue=113,	  White=0,		Amber=0,		UV=255,		Cyan=242,	Magenta=251,	Yellow=142}},
-    {name = "Bright Pink", 	      color = "-65308", 									                position = Settings.PresetCOLORStartPosition+18,
-      value={Red=221,		Green=2,		  Blue=96,	  White=0,		Amber=0,		UV=0,		  Cyan=34,	Magenta=253,	Yellow=159}},
-    {name = "Pink", 				      color = "-65308", 									                position = Settings.PresetCOLORStartPosition+19,
-      value={Red=255,		Green=127,		Blue=127,	  White=0,		Amber=0,		UV=0,		  Cyan=0,		Magenta=127,	Yellow=127}},
-    {name = "Flash Pink", 	      color = "-65308", 									                position = Settings.PresetCOLORStartPosition+20,
-      value={Red=223,		Green=32,		  Blue=96,	  White=0,		Amber=0,		UV=0,		  Cyan=32,	Magenta=223,	Yellow=159}},
-    {name = "Sunset Pink", 	      color = "-65308", 									                position = Settings.PresetCOLORStartPosition+21,
-      value={Red=255,		Green=0,		  Blue=85,	  White=0,		Amber=0,		UV=0,		  Cyan=0,		Magenta=255,	Yellow=170}},
-    {name = "Magenta", 			      color = "-65434", 									                position = Settings.PresetCOLORStartPosition+22,
-      value={Red=255,		Green=0,		  Blue=255,	  White=0,		Amber=0,		UV=0,		  Cyan=0,		Magenta=255,	Yellow=0}}
+    {Name = "CTB", 					      Color = "-8071681", 	                              Position = Settings.PresetCOLORStartPosition,
+      Value={Red=215,		Green=243,		Blue=255,	  White=255,	Amber=0,		UV=0,		  Cyan=40,	Magenta=12,	  Yellow=0}},	
+    {Name = "White", 				      Color = "-327682", 			                            Position = Settings.PresetCOLORStartPosition+1,
+      Value={Red=255,		Green=255,		Blue=255,	  White=255,	Amber=0,		UV=0,		  Cyan=0,		Magenta=0,		Yellow=0}},
+    {Name = "CTO", 					      Color = "-6824", 									                  Position = Settings.PresetCOLORStartPosition+2,
+      Value={Red=255,		Green=216,		Blue=176,	  White=255,	Amber=255,	UV=0,		  Cyan=0,		Magenta=39,		Yellow=79}},
+    {Name = "Salmon", 			      Color = "-65536", 									                Position = Settings.PresetCOLORStartPosition+3,
+      Value={Red=255,		Green=39,		  Blue=28,	  White=25,		Amber=0,		UV=0,		  Cyan=0,		Magenta=216,	Yellow=227}},
+    {Name = "Red", 					      Color = "-65536", 									                Position = Settings.PresetCOLORStartPosition+4,
+      Value={Red=255,		Green=0,		  Blue=0,		  White=0,		Amber=0,		UV=0,		  Cyan=0,		Magenta=255,	Yellow=255}},
+    {Name = "Peach", 				      Color = "-65536", 								                	Position = Settings.PresetCOLORStartPosition+5,
+      Value={Red=252,		Green=85,		  Blue=37,	  White=0,		Amber=0,		UV=0,		  Cyan=3,		Magenta=170,	Yellow=218}},
+    {Name = "Orange", 			      Color = "-33280", 									                Position = Settings.PresetCOLORStartPosition+6,
+      Value={Red=255,		Green=127,		Blue=0,		  White=0,		Amber=0,		UV=0,		  Cyan=0,		Magenta=127,	Yellow=255}},
+    {Name = "Yellow", 			      Color = "-2560", 									                  Position = Settings.PresetCOLORStartPosition+7,
+      Value={Red=255,		Green=255,		Blue=0,		  White=0,		Amber=0,		UV=0,		  Cyan=0,		Magenta=0,		Yellow=255}},
+    {Name = "Lime", 				      Color = "-2560", 									                  Position = Settings.PresetCOLORStartPosition+8,
+      Value={Red=191,		Green=255,		Blue=0,		  White=0,		Amber=0,		UV=0,		  Cyan=64,	Magenta=0,		Yellow=255}},
+    {Name = "Green", 				      Color = "-10879232", 								                Position = Settings.PresetCOLORStartPosition+9,
+      Value={Red=0,		  Green=255,		Blue=0,		  White=0,		Amber=0,		UV=0,		  Cyan=255,	Magenta=0,		Yellow=255}},
+    {Name = "Turquoise", 		      Color = "-16712449", 								                Position = Settings.PresetCOLORStartPosition+10,
+      Value={Red=0,		  Green=191,		Blue=127,	  White=0,		Amber=0,		UV=0,		  Cyan=255,	Magenta=64,		Yellow=127}},
+    {Name = "Cyan", 			      	Color = "-16712449", 							                	Position = Settings.PresetCOLORStartPosition+11,
+      Value={Red=0,		  Green=255,		Blue=255,	  White=0,		Amber=0,		UV=0,		  Cyan=255,	Magenta=0,		Yellow=0}},
+    {Name = "Azure", 				      Color = "-16712449", 								                Position = Settings.PresetCOLORStartPosition+12,
+      Value={Red=0,		  Green=160,		Blue=207,	  White=0,		Amber=0,		UV=0,		  Cyan=255,	Magenta=96,		Yellow=48}},
+    {Name = "Light Blue",       	Color = "-16769537", 								                Position = Settings.PresetCOLORStartPosition+13,
+      Value={Red=17,		Green=118,		Blue=255,	  White=0,		Amber=0,		UV=0,		  Cyan=238,	Magenta=137,	Yellow=0}},
+    {Name = "Blue", 				      Color = "-16769537", 								                Position = Settings.PresetCOLORStartPosition+14,
+      Value={Red=0,		  Green=0,		  Blue=255,	  White=0,		Amber=0,		UV=0,		  Cyan=255,	Magenta=255,	Yellow=0}},
+    {Name = "Dark Blue", 		      Color = "-16769537", 								                Position = Settings.PresetCOLORStartPosition+15,
+      Value={Red=0,		  Green=16,		  Blue=128,	  White=0,		Amber=0,		UV=0,		  Cyan=255,	Magenta=239,	Yellow=127}},
+    {Name = "Lavender", 		      Color = "-136631233", 								              Position = Settings.PresetCOLORStartPosition+16,
+      Value={Red=64,		Green=0,		  Blue=128,	  White=0,		Amber=0,		UV=0,		  Cyan=191,	Magenta=255,	Yellow=127}},
+    {Name = "Uv", 					      Color = "-136631233", 								              Position = Settings.PresetCOLORStartPosition+17,
+      Value={Red=13,		Green=4,		  Blue=113,	  White=0,		Amber=0,		UV=255,		Cyan=242,	Magenta=251,	Yellow=142}},
+    {Name = "Bright Pink", 	      Color = "-65308", 									                Position = Settings.PresetCOLORStartPosition+18,
+      Value={Red=221,		Green=2,		  Blue=96,	  White=0,		Amber=0,		UV=0,		  Cyan=34,	Magenta=253,	Yellow=159}},
+    {Name = "Pink", 				      Color = "-65308", 									                Position = Settings.PresetCOLORStartPosition+19,
+      Value={Red=255,		Green=127,		Blue=127,	  White=0,		Amber=0,		UV=0,		  Cyan=0,		Magenta=127,	Yellow=127}},
+    {Name = "Flash Pink", 	      Color = "-65308", 									                Position = Settings.PresetCOLORStartPosition+20,
+      Value={Red=223,		Green=32,		  Blue=96,	  White=0,		Amber=0,		UV=0,		  Cyan=32,	Magenta=223,	Yellow=159}},
+    {Name = "Sunset Pink", 	      Color = "-65308", 									                Position = Settings.PresetCOLORStartPosition+21,
+      Value={Red=255,		Green=0,		  Blue=85,	  White=0,		Amber=0,		UV=0,		  Cyan=0,		Magenta=255,	Yellow=170}},
+    {Name = "Magenta", 			      Color = "-65434", 									                Position = Settings.PresetCOLORStartPosition+22,
+      Value={Red=255,		Green=0,		  Blue=255,	  White=0,		Amber=0,		UV=0,		  Cyan=0,		Magenta=255,	Yellow=0}}
   },
   Color = {
-    {name = "White", 				      color = "-327682", 									                position = Settings.PresetCOLORStartPosition,
-      value={Red=255,		Green=255,		Blue=255,	  White=255,	Amber=0,		UV=0,		  Cyan=0,		Magenta=0,		Yellow=0}},
-    {name = "Red", 					      color = "-65536", 									                position = Settings.PresetCOLORStartPosition+1,
-      value={Red=255,		Green=0,		  Blue=0,		  White=0,		Amber=0,		UV=0,		  Cyan=0,		Magenta=255,	Yellow=255}},
-    {name = "Orange", 			      color = "-33280", 									                position = Settings.PresetCOLORStartPosition+2,
-      value={Red=255,		Green=127,		Blue=0,		  White=0,		Amber=0,		UV=0,		  Cyan=0,		Magenta=127,	Yellow=255}},
-    {name = "Yellow", 			      color = "-2560", 									                  position = Settings.PresetCOLORStartPosition+3,
-      value={Red=255,		Green=255,		Blue=0,		  White=0,		Amber=0,		UV=0,		  Cyan=0,		Magenta=0,		Yellow=255}},
-    {name = "Lime", 				      color = "-2560", 									                  position = Settings.PresetCOLORStartPosition+4,
-      value={Red=191,		Green=255,		Blue=0,		  White=0,		Amber=0,		UV=0,		  Cyan=64,	Magenta=0,		Yellow=255}},
-    {name = "Green", 				      color = "-10879232", 								                position = Settings.PresetCOLORStartPosition+5,
-      value={Red=0,		  Green=255,		Blue=0,		  White=0,		Amber=0,		UV=0,		  Cyan=255,	Magenta=0,		Yellow=255}},
-    {name = "Cyan", 				      color = "-16712449", 								                position = Settings.PresetCOLORStartPosition+6,
-      value={Red=0,		  Green=255,		Blue=255,	  White=0,		Amber=0,		UV=0,		  Cyan=255,	Magenta=0,		Yellow=0}},
-    {name = "Light Blue", 	      color = "-16769537", 								                position = Settings.PresetCOLORStartPosition+7,
-      value={Red=17,		Green=118,		Blue=255,	  White=0,		Amber=0,		UV=0,		  Cyan=238,	Magenta=137,	Yellow=0}},
-    {name = "Blue", 				      color = "-16769537", 								                position = Settings.PresetCOLORStartPosition+8,
-      value={Red=0,		  Green=0,		  Blue=255,	  White=0,		Amber=0,		UV=0,		  Cyan=255,	Magenta=255,	Yellow=0}},
-    {name = "Uv", 					      color = "-136631233", 								              position = Settings.PresetCOLORStartPosition+9,
-      value={Red=13,		Green=4,		  Blue=113,	  White=0,		Amber=0,		UV=255,		Cyan=242,	Magenta=251,	Yellow=142}},
-    {name = "Pink", 				      color = "-65308", 									                position = Settings.PresetCOLORStartPosition+10,
-      value={Red=255,		Green=127,		Blue=127,	  White=0,		Amber=0,		UV=0,		  Cyan=0,		Magenta=127,	Yellow=127}},
-    {name = "Magenta", 			      color = "-65434", 									                position = Settings.PresetCOLORStartPosition+11,
-      value={Red=255,		Green=0,		  Blue=255,	  White=0,		Amber=0,		UV=0,		  Cyan=0,		Magenta=255,	Yellow=0}}
+    {Name = "White", 				      Color = "-327682", 									                Position = Settings.PresetCOLORStartPosition,
+      Value={Red=255,		Green=255,		Blue=255,	  White=255,	Amber=0,		UV=0,		  Cyan=0,		Magenta=0,		Yellow=0}},
+    {Name = "Red", 					      Color = "-65536", 									                Position = Settings.PresetCOLORStartPosition+1,
+      Value={Red=255,		Green=0,		  Blue=0,		  White=0,		Amber=0,		UV=0,		  Cyan=0,		Magenta=255,	Yellow=255}},
+    {Name = "Orange", 			      Color = "-33280", 									                Position = Settings.PresetCOLORStartPosition+2,
+      Value={Red=255,		Green=127,		Blue=0,		  White=0,		Amber=0,		UV=0,		  Cyan=0,		Magenta=127,	Yellow=255}},
+    {Name = "Yellow", 			      Color = "-2560", 									                  Position = Settings.PresetCOLORStartPosition+3,
+      Value={Red=255,		Green=255,		Blue=0,		  White=0,		Amber=0,		UV=0,		  Cyan=0,		Magenta=0,		Yellow=255}},
+    {Name = "Lime", 				      Color = "-2560", 									                  Position = Settings.PresetCOLORStartPosition+4,
+      Value={Red=191,		Green=255,		Blue=0,		  White=0,		Amber=0,		UV=0,		  Cyan=64,	Magenta=0,		Yellow=255}},
+    {Name = "Green", 				      Color = "-10879232", 								                Position = Settings.PresetCOLORStartPosition+5,
+      Value={Red=0,		  Green=255,		Blue=0,		  White=0,		Amber=0,		UV=0,		  Cyan=255,	Magenta=0,		Yellow=255}},
+    {Name = "Cyan", 				      Color = "-16712449", 								                Position = Settings.PresetCOLORStartPosition+6,
+      Value={Red=0,		  Green=255,		Blue=255,	  White=0,		Amber=0,		UV=0,		  Cyan=255,	Magenta=0,		Yellow=0}},
+    {Name = "Light Blue", 	      Color = "-16769537", 								                Position = Settings.PresetCOLORStartPosition+7,
+      Value={Red=17,		Green=118,		Blue=255,	  White=0,		Amber=0,		UV=0,		  Cyan=238,	Magenta=137,	Yellow=0}},
+    {Name = "Blue", 				      Color = "-16769537", 								                Position = Settings.PresetCOLORStartPosition+8,
+      Value={Red=0,		  Green=0,		  Blue=255,	  White=0,		Amber=0,		UV=0,		  Cyan=255,	Magenta=255,	Yellow=0}},
+    {Name = "Uv", 					      Color = "-136631233", 								              Position = Settings.PresetCOLORStartPosition+9,
+      Value={Red=13,		Green=4,		  Blue=113,	  White=0,		Amber=0,		UV=255,		Cyan=242,	Magenta=251,	Yellow=142}},
+    {Name = "Pink", 				      Color = "-65308", 									                Position = Settings.PresetCOLORStartPosition+10,
+      Value={Red=255,		Green=127,		Blue=127,	  White=0,		Amber=0,		UV=0,		  Cyan=0,		Magenta=127,	Yellow=127}},
+    {Name = "Magenta", 			      Color = "-65434", 									                Position = Settings.PresetCOLORStartPosition+11,
+      Value={Red=255,		Green=0,		  Blue=255,	  White=0,		Amber=0,		UV=0,		  Cyan=0,		Magenta=255,	Yellow=0}}
   }
 }
 
 
+-- START POINT, to loop actions
 ::START::
 
 --# REQUEST the Action type # --
@@ -693,7 +760,7 @@ else
   LogActivity("\r\n\t" .."Preset Type: " .. Settings.Type)
 end
 
--- If Color preferencens not already set, and PresetType is Color, request the color preferences to apply
+-- If Color preference is not already set, and PresetType is Color, request the color preferences to be applied
 if Settings.Color == nil then
   if Settings.Type == PresetName.Color then
     InputSettings = false
@@ -716,10 +783,109 @@ if Settings.Color == nil then
   end
 end
 
+--# REQUEST the Fixtures Group # --
+-----------------------------------
+::GROUPS::
+-- Request Fixtures Group setting when Populate preset Only
+if Settings.Action == Content.Action.Populate then
+  if Settings.Groups == nil then
+    -- Request EU number of groups to be threated
+    InputSettings = false
+    InputSettings = {
+      Question = Content.Groups.Question,
+      Description = Content.Groups.Description,
+      Buttons = Form.OkCancel,
+      DefaultButton = Word.Ok,
+      Cancel = true
+    }
+
+    Settings.NbOfGroups = InputNumber(InputSettings)
+
+    if Cancelled(Settings.NbOfGroups) then
+      goto EXIT
+    end
+
+    -- Indicate the number of Groups to be threated
+    Settings.Groups = {}
+
+    -- Preset Resolution to get
+    PresetsResolution = {PresetName.Intensity, PresetName.Color}
+
+    -- Request EU details for each group
+    for i = 1, Settings.NbOfGroups, 1 do
+      -- Request the Group ID
+      InputSettings.Question = replace(Content.GroupID.Question, Rep, i)
+      InputSettings.Description = replace(Content.GroupID.Description, Rep, i)
+
+      local Group = {}
+      Group.Resolution = {}
+      Group.ID = InputNumber(InputSettings)
+
+      if Cancelled(Group.ID) then
+          goto EXIT
+      end
+
+      -- Get the Group Name
+      Group.Name = CheckEmpty(Onyx.GetGroupName(Group.ID))
+
+      -- Request EU details for each PRESET TYPE resolution
+      InputSettings = false
+      InputSettings = {
+        Buttons = Form.OkCancel,
+        DefaultButton = Word.Ok,
+        DropDown = {Content.Resolution.Standard, Content.Resolution.Fine},
+        DropDownDefault = Content.Resolution.Standard,
+        Cancel = true
+      }
+      for idPreset, LocalPreset in pairs(PresetsResolution) do
+        ReplaceRepID = "n°" .. i .. " ID: " .. Group.ID .. " Name: " .. Group.Name
+        InputSettings.Question = replace(replace(Content.Resolution.Question, Rep, LocalPreset), RepID, ReplaceRepID)
+        InputSettings.Description = replace(replace(Content.Resolution.Description, Rep, LocalPreset), RepID, ReplaceRepID)
+
+        Group.Resolution[LocalPreset] = InputDropDown(InputSettings)
+
+          -- If not PresetType defined, exit
+        if Cancelled(Group.Resolution[LocalPreset]) then
+          goto EXIT
+        end
+      end
+      -- Inset into the global Groups table
+      table.insert(Settings.Groups, Group)
+    end
+    -- RESUME of GROUPS
+    LogActivity("\r\n" .. Content.Groups.Options)
+    LogActivity("\r\n\t" .. "- " .. Settings.NbOfGroups .. " group(s)")
+
+    -- DETAIL of GROUPS
+    LogActivity("\r\n" .. Content.Groups.List)
+    for i, Group in pairs(Settings.Groups) do
+        LogActivity("\r\n\t" .. "- n°" .. Group.ID .. " - " .. Group.Name)
+        for Key, Value in pairs(Group.Resolution) do
+          LogActivity("\r\n\t\t" .. "- " .. Key .. ": " .. Value)
+        end
+    end
+  else
+    InputSettings = false
+    InputSettings = {
+      Question = Content.Groups.ReuseGroup,
+      Description = Content.Groups.ReuseGroup,
+      Buttons = Form.YesNo,
+      DefaultButton = Word.Yes
+    }
+
+    if InputYesNo(InputValidationSettings) then
+    else
+      Settings.Groups = nil
+      goto GROUPS
+    end
+  end
+end
+
 ----------------------------
 -- Execution for Creation --
 ----------------------------
 
+-- CREATE ACTION
 if Settings.Action == Content.Action.Create then
   --# USER Validation # --
   ------------------------
@@ -732,11 +898,35 @@ if Settings.Action == Content.Action.Create then
   }
 
   Settings.Validation = InputYesNo(InputValidationSettings)
+  -- RESET Log Messages
+  Messages = {}
 
   if Settings.Validation then
+    if Settings.Type == PresetName.Color then
+      -- Define the color preset type following preferences
+      if Settings.Color == Content.Color.Extended then
+        Settings.PresetTyping = 'ColorFull'
+      else
+        Settings.PresetTyping = 'Color'
+      end
+    else
+      -- Define the preset type
+      Settings.PresetTyping = Settings.Type
+    end
+    -- Create Preset
+    for i, InnerPreset in pairs(PresetsConfiguration[Settings.PresetTyping]) do
+      RecordPreset(Settings.Type, InnerPreset, true)
+      Sleep(Settings.WaitTime)
+    end
+    -- Don't exit, purpose to continue for a next action!
     goto START
   end
+-- POPULATE ACTION
 elseif Settings.Action == Content.Action.Populate then
+  -- RESET Log Messages
+  Messages = {}
+
+  -- Don't exit, purpose to continue for a next action!
   goto START
 end
 
