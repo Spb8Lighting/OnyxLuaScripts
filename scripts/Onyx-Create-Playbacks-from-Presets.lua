@@ -11,6 +11,8 @@
 ---------------
 -- Changelog --
 ---------------
+-- 04-01-2019 - 1.2: Fix a display issue of "Record Option" log activity
+--                  + Fix horizontal grid arrangement when the start playback button is not = 1
 -- 30-10-2018 - 1.1: Fix a bug when the grid width is smaller than the number of cuelist to be created
 --                  + Fix the historical issue with the first cuelist creation which fails randomly
 -- 07-09-2018 - 1.0: Creation
@@ -28,7 +30,7 @@ Settings = {
 }
 
 ScriptInfos = {
-    version = "1.1",
+    version = "1.2",
     name = "CreatePlaybacksFromPresets"
 }
 
@@ -209,8 +211,7 @@ for i = 1, Settings.NbOfGroups, 1 do
     if Cancelled(GroupID) then
         goto EXIT
     end
-
-    table.insert(Settings.Groups, {id = GroupID, name = Onyx.GetGroupName(GroupID)})
+    table.insert(Settings.Groups, {id = GroupID, name = CheckEmpty(Onyx.GetGroupName(GroupID))})
 end
 
 
@@ -355,7 +356,7 @@ LogActivity("\r\n\t" .. "- " .. Settings.TextOrientation .. " arrangement for " 
 Settings.StartingEmptyCueList = Onyx.GetNextCuelistNumber()
 
 -- RESUME of TIMING
-LogActivity(Content.Records.Options)
+LogActivity("\r\n" .. Content.Records.Options)
 LogActivity("\r\n\t" .. "- Create Cuelist(s) from n°" .. Settings.StartingEmptyCueList)
 LogActivity("\r\n\t" .. "- Cue Fade Time: " .. Settings.TimeFade .. "s")
 LogActivity("\r\n\t" .. "- Cuelist Release Time: " .. Settings.TimeRelease .. "s")
@@ -443,8 +444,8 @@ if Settings.Validation then
         if Settings.Orientation == true then -- Vertical Orientation
             Counter.PlaybackNumber = Settings.PlaybackButtonStart + i
         else -- Horizontal Orientation
-            if i == 1 and Counter.PlaybackNumber > Settings.PlaybackWidth then
-                Settings.PlaybackWidth = Settings.PlaybackWidth * math.ceil(Counter.PlaybackNumber / Settings.PlaybackWidth)
+            if i == 1 and Settings.NumberOfPreset > Settings.PlaybackWidth then
+                Settings.PlaybackWidth = Settings.PlaybackWidth * math.ceil(Settings.NumberOfPreset / Settings.PlaybackWidth)
             end
             Counter.PlaybackNumber = Settings.PlaybackButtonStart + (Settings.PlaybackWidth * i)
         end
