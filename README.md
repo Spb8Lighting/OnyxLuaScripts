@@ -131,6 +131,11 @@ Inside the [header.lua](https://github.com/Spb8Lighting/OnyxLuaScripts/blob/mast
     <p>Dependency: KeyNumber()</p>
     <p>This function will record a new cuelist (of the latest recorded cuelist type) with ID CuelistID</p>
 </details>
+<details>
+    <summary>RecordPreset(PresetType, Preset, Merging)</summary>
+    <p>Arguments: string PresetType [Intensity|PanTilt|Color|Gobo|Beam|BeamFX|Framing], JSON Preset {Position: int, Name: string}, boolean Merging</p>
+    <p>This function will create a preset of the provided PresetType at Preset.Position named Preset.Name. You can merge the preset creation by setting Merging to true, false will overwrite</p>
+</details>
 <!---<details>
     <summary>DeleteGroup(GroupID)</summary>
     <p>Arguments: int GroupID</p>

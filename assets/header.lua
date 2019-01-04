@@ -3,6 +3,7 @@
 ---------------
 -- Changelog --
 ---------------
+-- 04-01-2019 - 1.6: RecordPreset() function has been added
 -- 29-12-2018 - 1.5: DeleteGroup() function & ListGroup() has been added
 -- 16-11-2018 - 1.4: InputNumber() function now accept MinValue as Infos to SetMinValue (default stays 1)
 -- 08-11-2018 - 1.3: New InputText() function
@@ -388,6 +389,25 @@ function DeletePreset(PresetType, PresetID)
 		Onyx.DeleteBeamFXPreset(PresetID)
 	elseif PresetType == PresetName.Framing then
 		Onyx.DeleteFramingPreset(PresetID)
+	end
+	return true
+end
+
+function RecordPreset(PresetType, Preset, Merging)
+	if PresetType == PresetName.PanTilt then
+		Onyx.RecordPanTiltPreset(Preset.Position, Preset.Name, Merging)
+	elseif PresetType == PresetName.Color then
+		Onyx.RecordColorPreset(Preset.Position, Preset.Name, Merging)
+	elseif PresetType == PresetName.Intensity then
+		Onyx.RecordIntensityPreset(Preset.Position, Preset.Name, Merging)
+	elseif PresetType == PresetName.Gobo then
+		Onyx.RecordGoboPreset(Preset.Position, Preset.Name, Merging)
+	elseif PresetType == PresetName.Beam then
+		Onyx.RecordBeamPreset(Preset.Position, Preset.Name, Merging)
+	elseif PresetType == PresetName.BeamFX then
+		Onyx.RecordBeamFXPreset(Preset.Position, Preset.Name, Merging)
+	elseif PresetType == PresetName.Framing then
+		Onyx.RecordFramingPreset(Preset.Position, Preset.Name, Merging)
 	end
 	return true
 end
