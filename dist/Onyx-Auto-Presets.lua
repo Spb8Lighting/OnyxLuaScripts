@@ -559,6 +559,43 @@ Content = {
 --      Functions       --
 --------------------------
 
+function SetSettingsType()
+  if Settings.Type == PresetName.Color then
+    -- Define the color preset type following preferences
+    if Settings.Color == Content.Color.Extended then
+      Settings.PresetTyping = 'ColorFull'
+    else
+      Settings.PresetTyping = 'Color'
+    end
+  else
+    -- Define the preset type
+    Settings.PresetTyping = Settings.Type
+  end
+end
+
+function ApplyPresetContent(Group, Preset)
+  if Preset.Value ~= nil then
+    -- If the preset type is color, record additional value for color macro
+    if Settings.Type == PresetName.Color then
+      Onyx.SetAttributeVal('Color Macro', 0, true)
+    end
+    if type(Preset.Value) == 'table' then
+      for Key, Value in pairs(Preset.Value) do
+        -- Set value on 16 bits if needed of course!
+        if Group.Resolution[Settings.Type] == Content.Resolution.Fine then
+          Value = Value * 257
+        end
+        -- Set the attribute and its value
+        Onyx.SetAttributeVal(Key, Value, true)
+      end
+    else
+      Onyx.SetAttributeVal(Settings.Type, Preset.Value, true)
+    end
+    -- Record into Preset
+    RecordPreset(Settings.Type, Preset, true)
+    Sleep(Settings.WaitTime)
+  end
+end
 
 --------------------------
 -- Collect Informations --
@@ -902,23 +939,14 @@ if Settings.Action == Content.Action.Create then
   Messages = {}
 
   if Settings.Validation then
-    if Settings.Type == PresetName.Color then
-      -- Define the color preset type following preferences
-      if Settings.Color == Content.Color.Extended then
-        Settings.PresetTyping = 'ColorFull'
-      else
-        Settings.PresetTyping = 'Color'
-      end
-    else
-      -- Define the preset type
-      Settings.PresetTyping = Settings.Type
-    end
+    SetSettingsType()
     -- Create Preset
     for i, InnerPreset in pairs(PresetsConfiguration[Settings.PresetTyping]) do
       RecordPreset(Settings.Type, InnerPreset, true)
       Sleep(Settings.WaitTime)
     end
     -- Don't exit, purpose to continue for a next action!
+    Onyx.ClearProgrammer()
     goto START
   end
 -- POPULATE ACTION
@@ -937,8 +965,19 @@ elseif Settings.Action == Content.Action.Populate then
   Messages = {}
 
   if Settings.Validation then
-
+    SetSettingsType()
+    for i, Group in pairs(Settings.Groups) do
+      Onyx.ClearProgrammer()
+      -- Create Preset
+      Onyx.SelectGroup(Group.ID)
+      Sleep(Settings.WaitTime)
+      for i, InnerPreset in pairs(PresetsConfiguration[Settings.PresetTyping]) do
+        ApplyPresetContent(Group, InnerPreset)
+        Sleep(Settings.WaitTime)
+      end
+    end
     -- Don't exit, purpose to continue for a next action!
+    Onyx.ClearProgrammer()
     goto START
   end
 end
