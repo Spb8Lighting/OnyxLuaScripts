@@ -45,6 +45,8 @@ ScriptInfos = {
 Rep = "%VAR%"
 RepID = "%GROUPID%"
 
+AutoPresetTypes = {PresetName.Intensity, PresetName.Color, PresetName.Gobo, PresetName.Beam}
+
 Content = {
   StopMessage = "Stopped!" .. "\r\n\t" .. "The value defined in the script configuration is not supported",
   Action = {
@@ -67,8 +69,8 @@ Content = {
   Resolution = {
     Question = "[" .. Rep .. "] What is the " .. Rep .. " resolution for the group ".. RepID .."?",
     Description = "[" .. Rep .. "] Please select the " .. Rep .. " resolution for the group ".. RepID ..":",
-    Standard = "8bits (standard)",
-    Fine = "16Bits (fine)"
+    Standard = "8 bits (standard)",
+    Fine = "16 bits (fine)"
   },
   Create = {
     Question = "Which type of preset do you want to " .. Rep .. "?",
@@ -103,15 +105,17 @@ Content = {
 -- Collect Informations --
 --------------------------
 
-InputSettings = {}
-
 --# REQUEST the Preset Grid Width # --
 --------------------------------
 
-InputSettings.Question = Content.Grid.Question
-InputSettings.Description = Content.Grid.Description
-InputSettings.CurrentValue = CheckEmpty(GetVar("Settings.PresetGridWidth"), 8)
-InputSettings.MinValue = 4
+InputSettings = {
+  Question = Content.Grid.Question,
+  Description = Content.Grid.Description,
+  CurrentValue = CheckEmpty(GetVar("Settings.PresetGridWidth"), 8),
+  MinValue = 4,
+  Buttons = Form.OkCancel,
+  DefaultButton = Word.Ok
+}
 
 Settings.PresetGridWidth = InputNumber(InputSettings)
 
@@ -164,7 +168,7 @@ InputSettings = {
   Description = replace(Content.Create.Description, Rep, Settings.Action),
   Buttons = Form.OkCancel,
   DefaultButton = Word.Ok,
-  DropDown = {PresetName.Intensity, PresetName.Color, PresetName.Gobo, PresetName.Beam},
+  DropDown = AutoPresetTypes,
   DropDownDefault = CheckEmpty(GetVar("Settings.Type"), PresetName.Intensity),
   Cancel = true
 }
@@ -233,9 +237,6 @@ if Settings.Action == Content.Action.Populate then
     -- Indicate the number of Groups to be threated
     Settings.Groups = {}
 
-    -- Preset Resolution to get
-    PresetsResolution = {PresetName.Intensity, PresetName.Color}
-
     -- Request EU details for each group
     for i = 1, Settings.NbOfGroups, 1 do
       -- Request the Group ID
@@ -262,8 +263,8 @@ if Settings.Action == Content.Action.Populate then
         DropDownDefault = Content.Resolution.Standard,
         Cancel = true
       }
-      for idPreset, LocalPreset in pairs(PresetsResolution) do
-        ReplaceRepID = "n°" .. i .. " ID: " .. Group.ID .. " Name: " .. Group.Name
+      for idPreset, LocalPreset in pairs(AutoPresetTypes) do
+        ReplaceRepID = "n°" .. i .. " " .. Group.Name .. "[" .. Group.ID .. "]"
         InputSettings.Question = replace(replace(Content.Resolution.Question, Rep, LocalPreset), RepID, ReplaceRepID)
         InputSettings.Description = replace(replace(Content.Resolution.Description, Rep, LocalPreset), RepID, ReplaceRepID)
 
@@ -314,7 +315,6 @@ end
 if Settings.Action == Content.Action.Create then
   --# USER Validation # --
   ------------------------
-
   InputValidationSettings = {
     Question = replace(Content.CreateValidation.Question, Rep, Settings.Type),
     Description = Content.CreateValidation.Description .. "\n\r\n\r" .. GetActivity(),
@@ -348,11 +348,24 @@ if Settings.Action == Content.Action.Create then
   end
 -- POPULATE ACTION
 elseif Settings.Action == Content.Action.Populate then
+  --# USER Validation # --
+  ------------------------
+  InputValidationSettings = {
+    Question = replace(Content.PopulateValidation.Question, Rep, Settings.Type),
+    Description = Content.PopulateValidation.Description .. "\n\r\n\r" .. GetActivity(),
+    Buttons = Form.YesNo,
+    DefaultButton = Word.Yes
+  }
+
+  Settings.Validation = InputYesNo(InputValidationSettings)
   -- RESET Log Messages
   Messages = {}
 
-  -- Don't exit, purpose to continue for a next action!
-  goto START
+  if Settings.Validation then
+
+    -- Don't exit, purpose to continue for a next action!
+    goto START
+  end
 end
 
 ::EXIT::
