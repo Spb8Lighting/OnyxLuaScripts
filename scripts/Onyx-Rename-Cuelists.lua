@@ -1,4 +1,4 @@
--- ShowCockpit LUA Script: CreatePlaybacksFromPresets
+-- ShowCockpit LUA Script: RenameCuelists
 --   created on ShowCockpit v2.13.0
 --   by Spb8 Lighting
 --   on 08-11-2018
@@ -11,6 +11,7 @@
 ---------------
 -- Changelog --
 ---------------
+-- 28-03-2019 - 1.1: Increase WaitTime to avoid missing cue renaming
 -- 08-11-2018 - 1.0: Creation
 
 -------------------
@@ -18,11 +19,11 @@
 -------------------
 
 Settings = {
-  WaitTime = 0.1
+  WaitTime = 0.5
 }
 
 ScriptInfos = {
-  version = "1.0",
+  version = "1.1",
   name = "RenameCuelist"
 }
 
