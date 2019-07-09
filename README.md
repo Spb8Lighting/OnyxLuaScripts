@@ -5,6 +5,7 @@ This repository contains some LUA script which can be run from ShowCockpit to in
 ## Script List
 
 <!---* [Onyx-Delete-Groups.lua](https://github.com/Spb8Lighting/OnyxLuaScripts/blob/master/dist/Onyx-Delete-Groups.lua) - This script allows to delete a range of group (batch mode) -->
+* [Onyx-Auto-Presets.lua](https://github.com/Spb8Lighting/OnyxLuaScripts/blob/master/dist/Onyx-Auto-Presets.lua) - This script allows to create a bunch of presets in a second. It can also populate some of them based on a group of selection
 * [Onyx-Delete-Cuelists.lua](https://github.com/Spb8Lighting/OnyxLuaScripts/blob/master/dist/Onyx-Delete-Cuelists.lua) - This script allows to delete a range of cuelist (batch mode)
 * [Onyx-Delete-Presets.lua](https://github.com/Spb8Lighting/OnyxLuaScripts/blob/master/dist/Onyx-Delete-Presets.lua) - This script allows to delete a range of presets (batch mode)
 * [Onyx-Update-CueFade-CuelistRelease.lua](https://github.com/Spb8Lighting/OnyxLuaScripts/blob/master/dist/Onyx-Update-CueFade-CuelistRelease.lua) - This script allows to update the cues fade times in the meantime of the cuelist release time
