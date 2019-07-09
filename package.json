@@ -11,11 +11,11 @@
     "gulp": "^3.9.1",
     "gulp-rename": "^1.4.0",
     "gulp-replace": "^1.0.0",
-    "gulp-zip": "^4.2.0",
-    "merge-stream": "^1.0.1"
+    "gulp-zip": "^5.0.0",
+    "merge-stream": "^2.0.0"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "update:packages": "npm update --save-dev && npm update --save"
   },
   "repository": {
     "type": "git",

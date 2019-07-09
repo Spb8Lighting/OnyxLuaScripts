@@ -7,9 +7,9 @@ const gulp = require('gulp')
 const Scripts = {
 	AutoPresets: {
 		LUA: 'Onyx-Auto-Presets.lua',
-		Header : {
-			Match : '--##LUAPRESETSINCLUDE##--',
-			Replace : 'Auto-Presets.lua'
+		Header: {
+			Match: '--##LUAPRESETSINCLUDE##--',
+			Replace: 'Auto-Presets.lua'
 		}
 	},
 	CreatePlaybackFromPresets: {
