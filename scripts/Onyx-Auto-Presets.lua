@@ -11,6 +11,8 @@
 ---------------
 -- Changelog --
 ---------------
+-- 09-09-2019 - 0.1: Allow to adjust the preset creation position + For Color preset, the Color Palette choice (Basic or Full) is asked back (previous choice kept) to enhance the workflow
+-- 05-01-2019 - 0.0.1: Preset Populate is active
 -- 04-01-2019 - 0.0.0.1: Preset creation works, not the populate part
 -- 06-12-2018 - 0.0.0.0.0.1: Initialisation, not working yet
 -- 16-11-2018 - 0.0.0.0.0.0.1: Initialisation, not working yet
@@ -21,18 +23,22 @@
 
 Settings = {
   WaitTime = 0.5,
-  PresetINTENSITYStartPosition = 1,	  -- Adjust the start point from the first line for INTENSITY presets
-  PresetCOLORStartPosition = 1,		    -- Adjust the start point from the first line for COLOR presets
-  PresetGOBOStartPosition = 1,		    -- Adjust the start point from the first line for Gobo presets
-  PresetBEAMStartPosition = 1		      -- Adjust the start point from the first line for BEAM presets
+  PresetStartPosition = {}
 }
 
 ScriptInfos = {
-	version = "0.0.0.1",
+	version = "0.1",
 	name = "AutoPresets"
 }
 
 --##LUAHEADERINCLUDE##--
+
+Settings.PresetStartPosition[PresetName.Intensity] = 1	  -- Adjust the start point from the first line for INTENSITY presets
+Settings.PresetStartPosition[PresetName.Color] = 1		    -- Adjust the start point from the first line for COLOR presets
+Settings.PresetStartPosition[PresetName.Gobo] = 1		      -- Adjust the start point from the first line for Gobo presets
+Settings.PresetStartPosition[PresetName.Beam] = 1		      -- Adjust the start point from the first line for BEAM presets
+
+--##LUAPRESETSINCLUDE##--
 
 ----------------------------------------------------
 -- Main Script - dont change if you don't need to --
@@ -71,6 +77,10 @@ Content = {
     Description = "[" .. Rep .. "] Please select the " .. Rep .. " resolution for the group ".. RepID ..":",
     Standard = "8 bits (standard)",
     Fine = "16 bits (fine)"
+  },
+  PresetPosition = {
+    Question = "Where do you want to start recording " .. Rep .. " presets?",
+    Description = "This option permit to define where to start recording " .. Rep .. " presets"
   },
   Create = {
     Question = "Which type of preset do you want to " .. Rep .. "?",
@@ -163,8 +173,6 @@ else
   LogActivity("\r\n\t" .. "Preset Grid Width: " .. Settings.PresetGridWidth)
 end
 
---##LUAPRESETSINCLUDE##--
-
 -- START POINT, to loop actions
 ::START::
 
@@ -226,26 +234,45 @@ else
   LogActivity("\r\n\t" .."Preset Type: " .. Settings.Type)
 end
 
--- If Color preference is not already set, and PresetType is Color, request the color preferences to be applied
-if Settings.Color == nil then
-  if Settings.Type == PresetName.Color then
-    InputSettings = false
-    InputSettings = {
-      Question = Content.Color.Question,
-      Description = Content.Color.Description,
-      Buttons = Form.OkCancel,
-      DropDown = {Content.Color.Extended, Content.Color.Basic},
-      DropDownDefault = CheckEmpty(GetVar("Settings.Color"), Content.Color.Basic)
-    }
-    Settings.Color = InputDropDown(InputSettings)
+--# REQUEST the Preset Start Position # --
+--------------------------------
+InputSettings = false
+InputSettings = {
+  Question = replace(Content.PresetPosition.Question, Rep, Settings.Type),
+  Description = replace(Content.PresetPosition.Description, Rep, Settings.Type),
+  Buttons = Form.OkCancel,
+  DefaultButton = Word.Ok,
+  CurrentValue = CheckEmpty(GetVar("Settings.PresetStartPosition" .. Settings.Type), Settings.PresetStartPosition[Settings.Type]),
+  Cancel = true
+}
+Settings.PresetStartPosition[Settings.Type] = InputNumber(InputSettings)
 
-    -- If not PresetType defined, exit
-    if Cancelled(Settings.Color) then
-      goto EXIT
-    else
-      SetVar("Settings.Color", Settings.Color)
-      LogActivity("\r\n\t" .."Color Preference: " .. Settings.Color)
-    end
+-- If not PresetType defined, exit
+if Cancelled(Settings.PresetStartPosition[Settings.Type]) then
+  goto EXIT
+else
+  SetVar("Settings.PresetStartPosition" .. Settings.Type, Settings.PresetStartPosition[Settings.Type])
+  LogActivity("\r\n\t" .. Settings.Type .. " Preset Start Position: " .. Settings.PresetStartPosition[Settings.Type])
+end
+
+-- If Color preference is not already set, and PresetType is Color, request the color preferences to be applied
+if Settings.Type == PresetName.Color then
+  InputSettings = false
+  InputSettings = {
+    Question = Content.Color.Question,
+    Description = Content.Color.Description,
+    Buttons = Form.OkCancel,
+    DropDown = {Content.Color.Extended, Content.Color.Basic},
+    DropDownDefault = CheckEmpty(GetVar("Settings.Color"), Content.Color.Basic)
+  }
+  Settings.Color = InputDropDown(InputSettings)
+
+  -- If not PresetType defined, exit
+  if Cancelled(Settings.Color) then
+    goto EXIT
+  else
+    SetVar("Settings.Color", Settings.Color)
+    LogActivity("\r\n\t" .."Color Preference: " .. Settings.Color)
   end
 end
 
@@ -364,6 +391,7 @@ if Settings.Action == Content.Action.Create then
   Messages = {}
 
   if Settings.Validation then
+    PresetsConfiguration = GetPresetsConfiguration()
     SetSettingsType()
     -- Create Preset
     for i, InnerPreset in pairs(PresetsConfiguration[Settings.PresetTyping]) do
