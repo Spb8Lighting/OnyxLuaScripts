@@ -11,6 +11,7 @@ This repository contains some LUA script which can be run from ShowCockpit to in
 * [Onyx-Update-CueFade-CuelistRelease.lua](https://github.com/Spb8Lighting/OnyxLuaScripts/blob/master/dist/Onyx-Update-CueFade-CuelistRelease.lua) - This script allows to update the cues fade times in the meantime of the cuelist release time
 * [Onyx-Create-Playbacks-from-Presets.lua](https://github.com/Spb8Lighting/OnyxLuaScripts/blob/master/dist/Onyx-Create-Playbacks-from-Presets.lua) - This script allows to create playback(s) cuelist from preset(s)
 * [Onyx-Rename-Cuelists.lua](https://github.com/Spb8Lighting/OnyxLuaScripts/blob/master/dist/Onyx-Rename-Cuelists.lua) - This script allows to rename cuelist(s) massively (replace a searched value by another value)
+* [Onyx-Pan-Preset-Offset.lua](https://github.com/Spb8Lighting/OnyxLuaScripts/blob/master/dist/Onyx-Pan-Preset-Offset.lua) - This script allows to apply a pan offset on a range of presets (batch mode)
 
 ## Lua Fonctions
 

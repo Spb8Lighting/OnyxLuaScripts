@@ -29,6 +29,9 @@ const Scripts = {
 	},
 	UpdateCueFadeCuelistRelease: {
 		LUA: 'Onyx-Update-CueFade-CuelistRelease.lua'
+	},
+	PanPresetOffset: {
+		LUA: 'Onyx-Pan-Preset-Offset.lua'
 	}
 }
 let Specific = {
